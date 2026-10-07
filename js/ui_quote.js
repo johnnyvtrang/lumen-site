@@ -52,8 +52,8 @@ const DISC='This is an estimate for the vehicle and condition you described. At 
 const TAX=' · before Utah sales tax where it applies';
 const QI='Interior: quoted from photos',QIW=cap((/\((.*)\)/.exec(B?B.STRINGS.quotedInterior:'')||['',''])[1])+'.'; 
 const DEP=P.model.policy.deposit,MULTI=P.model.policy.multi_vehicle.additional_off,pct=x=>Math.round(x*100)+'%';
-const DEP_HOW=CFG.CARD?'Paid when you book online.':"I'll text you a secure payment link to hold your date.";
-const DEP_FINE=`${pct(DEP.share)} of the estimate (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If I call off for weather, it always carries over.`;
+const DEP_HOW=CFG.CARD?'Paid by card when you book online, or by a secure link I text you if you book by text.':"I'll text you a secure payment link to hold your date.";
+const DEP_FINE=`${pct(DEP.share)} of the estimate, rounded to the nearest ${money(DEP.round_to)} (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If I call off for weather, it always carries over.`;
 const ADD_VEH=`Add another vehicle (${pct(MULTI)} off)`;
 function typeLabel(t,it){
 const L=P.types[t].label;
@@ -278,7 +278,8 @@ combos.forEach(c=>c.ready());
 }
 const root=D.getElementById('quote');
 let body,nav;
-const head=t=>`<h4 class="q-h" id="q-h" tabindex="-1">${esc(t)}</h4>`;
+const head=t=>`<h4 class="q-h" id="q-h" tabindex="-1"${st.step<6?' aria-describedby="q-pt"':''}>${esc(t)}</h4>`;
+const say=t=>{const el=root&&$('#q-ann',root);if(!el)return;el.textContent='';setTimeout(()=>{el.textContent=t;},60);};
 function focusSig(){
 const a=D.activeElement;
 if(!a||!root||!root.contains(a))return null;
@@ -351,7 +352,7 @@ $$('input[name="q-type"]',root).forEach(x=>{x.checked=!!(v&&v.manual&&v.type===x
 nav.hidden=!!v;
 const er=ui.err&&!v,nb=$('[data-act="next"]',nav);
 [nb,c1&&c1.input].forEach(x=>{if(x){if(er)x.setAttribute('aria-describedby','q-err');else x.removeAttribute('aria-describedby');}});
-if(c1)c1.input.toggleAttribute('aria-invalid',er);
+if(c1){if(er)c1.input.setAttribute('aria-invalid','true');else c1.input.removeAttribute('aria-invalid');}
 paintLists();
 }
 function stripTop(v){
@@ -408,8 +409,9 @@ function fsHTML(q,a,deco,srLegend){
 const multi=q.type==='multi',val=a[q.key],nm='q-'+q.key;
 const on=x=>(multi?(val||[]).map(String).indexOf(String(x))>=0:String(val)===String(x));
 const opts=q.options.map(o=>`<label class="q-opt"><input type="${multi?'checkbox':'radio'}" name="${nm}" value="${esc(o.value)}"${(o.exclusive?!(val||[]).length:on(o.value))?' checked':''}><span>${esc(o.label)}${(deco&&deco[o.value])||''}</span></label>`).join('');
-const kids=q.key==='riders'&&on('kids')?`<p class="q-help">${esc(q.options[0].help)}</p>`:'';
-return`<fieldset class="q-q"><legend${srLegend?' class="sr-only"':''}>${esc(q.legend)}</legend>${q.help?`<p class="q-help">${q.help}</p>`:''}<div class="q-opts">${opts}</div>${kids}</fieldset>`;
+const kids=q.key==='riders'&&on('kids')?`<p class="q-help" id="qh-riders-kids">${esc(q.options[0].help)}</p>`:'';
+const desc=[q.help?'qh-'+q.key:null,kids?'qh-riders-kids':null].filter(Boolean).join(' ');
+return`<fieldset class="q-q"${desc?` aria-describedby="${desc}"`:''}><legend${srLegend?' class="sr-only"':''}>${esc(q.legend)}</legend>${q.help?`<p class="q-help" id="qh-${q.key}">${q.help}</p>`:''}<div class="q-opts">${opts}</div>${kids}</fieldset>`;
 }
 function stepQ(){
 const s=B.STEPS[st.step-1],v=st.vehicle,a=st.answers;
@@ -439,17 +441,18 @@ if(k==='riders')st.answers=B.applyRiders(a);
 save();paint();
 }
 function stepR(){
-return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-lines"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
+return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-lines"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
 }
 const line=(l,w,amt,cls)=>`<div class="q-line${cls?' '+cls:''}"><p><span>${esc(l)}</span>${w?`<small>${esc(w)}</small>`:''}</p><b>${amt}</b></div>`;
 function serviceLabel(r){return r.route==='quoted'?'Interior quoted from photos':r.route==='standard'?`${TW[r.track]} ${r.levelLabel}`:r.levelLabel;}
-function xHTML(x){
+function xHTML(x,gdesc){
 if(x.options){
 const sel=x.selected||x.options[0].key;
 return`<div class="q-x"><label class="q-xc"><input type="checkbox" name="qx" value="shampoo"${x.checked?' checked':''}><span>${esc(x.label)}</span><b>+${money(x.price)}</b></label><fieldset class="q-xo"><legend class="sr-only">${esc(x.label)}: what to shampoo</legend><div class="q-opts">${x.options.map(o=>`<label class="q-opt"><input type="radio" name="qx-sh" value="${o.key}"${o.key===sel?' checked':''}><span>${esc(o.label)} <b class="q-amt">${money(o.price)}</b></span></label>`).join('')}</div></fieldset></div>`;
 }
 const rid='qxr-'+x.key,may=x.mayNeed?'<em class="q-may">May be needed</em> ':'';
-return`<div class="q-x${x.enabled?'':' is-off'}"><label class="q-xc"><input type="checkbox" name="qx" value="${x.key}"${x.checked&&x.enabled?' checked':''}${x.enabled?(x.reason?` aria-describedby="${rid}"`:''):` disabled aria-describedby="${rid}"`}><span>${may}${esc(x.label)}</span><b>+${money(x.price)}</b></label>${x.reason?`<p class="q-xr" id="${rid}">${esc(x.reason)}</p>`:''}</div>`;
+const desc=[typeof gdesc==='string'?gdesc:null,x.reason?rid:null].filter(Boolean).join(' '); 
+return`<div class="q-x${x.enabled?'':' is-off'}"><label class="q-xc"><input type="checkbox" name="qx" value="${x.key}"${x.checked&&x.enabled?' checked':''}${x.enabled?'':' disabled'}${desc?` aria-describedby="${desc}"`:''}><span>${may}${esc(x.label)}</span><b>+${money(x.price)}</b></label>${x.reason?`<p class="q-xr" id="${rid}">${esc(x.reason)}</p>`:''}</div>`;
 }
 function paintR(){
 const v=st.vehicle,a=st.answers,r=B.recommend(a,v,P,cfg);
@@ -476,12 +479,15 @@ const ex=$('#q-ex',root);
 ex.hidden=!r.extras.length;
 $('summary',ex).textContent=`Add an extra (${r.extras.length})`;
 const gx=r.extras.filter(x=>!x.group),lx=r.extras.filter(x=>x.group==='glass'),sx=r.extras.filter(x=>x.group==='specialty');
-$('.q-xl',ex).innerHTML=gx.map(xHTML).join('')+
-(lx.length?`<p class="q-xg">${esc(B.STRINGS.glassTitle)} <small>${esc(r.glassPrep||'')}</small></p>${lx.map(xHTML).join('')}`:'')+
-(sx.length?`<p class="q-xg">Specialty surfaces <small>Same price at every level</small></p>${sx.map(xHTML).join('')}`:'');
+const grp=(title,sub,id,items,sr)=>`<fieldset class="q-xgf"><legend class="q-xg${sr?' sr-only':''}">${esc(title)}</legend>${sub?`<p class="q-xgp"${id?` id="${id}"`:''}>${esc(sub)}</p>`:''}${items}</fieldset>`;
+$('.q-xl',ex).innerHTML=(gx.length?grp('Extras','','',gx.map(x=>xHTML(x)).join(''),true):'')+
+(lx.length?grp(B.STRINGS.glassTitle,r.glassPrep||'','q-glass-prep',lx.map(x=>xHTML(x,r.glassPrep?'q-glass-prep':'')).join('')):'')+
+(sx.length?grp('Specialty surfaces','Same price at every level','',sx.map(x=>xHTML(x)).join('')):'');
 const trip=st.trip.length>0,q=current();
 $('#q-totl',root).textContent=quoted?'Estimate':(trip?'This vehicle':'Estimated total')+(r.interiorQuoted?' (exterior)':'');
 $('#q-tot',root).textContent=quoted?'Quoted':money(r.total);
+const dA=(trip?q.trip.deposit:r.deposit).amount; 
+$('#q-tots',root).textContent=(trip?` · Trip estimate ${q.trip.total?money(q.trip.total):'quoted'}`:'')+(dA?` · deposit ${money(dA)}`:'');
 $('#q-hrs',root).textContent=(quoted?'Interior quoted from photos':cap(r.hoursLabel))+TAX;
 $('#q-trip',root).innerHTML=trip?tripHTML(q.entries,q.trip):'';
 $('#q-dep',root).innerHTML=depHTML(trip?q.trip.deposit:r.deposit,trip);
@@ -490,6 +496,18 @@ $('#q-acts',root).innerHTML=(fine?(CFG.email?`<a class="btn btn-primary" data-ac
 `<button type="button" class="btn ${CFG.email?'btn-ghost':'btn-primary'}" data-act="copy">Copy ${what}</button>`
 :`<a class="btn btn-primary" data-act="sms" href="${esc(smsHref(text))}">Text me this ${what}</a>`)+
 `<a class="btn btn-ghost" href="#book" data-act="book">${trip?(q.entries.length===2?'Book both vehicles':`Book all ${q.entries.length} vehicles`):'Book this'}</a><button type="button" class="btn btn-ghost" data-act="addveh">${ADD_VEH}</button><button type="button" class="link-btn" data-act="reset">Start over</button>`;
+refreshBooked();
+}
+function refreshBooked(){
+const bs=sGet(SELKEY);
+if(!bs||!bs.quoteId)return;
+const Q=quoteOf(st.step===6?tripEntries():tripEntries().filter(x=>x.saved!=null));
+if(!Q){sDel(SELKEY);fire('lumen:selection',null);return;}
+const ns=B.withCards(Q.selection,(bs.vehicles||[]).filter(x=>x&&x.card),P.model);
+const flat=x=>JSON.stringify(Object.assign({},x,{createdAt:0}));
+if(flat(bs)===flat(ns))return;
+sSet(SELKEY,ns);fire('lumen:selection',ns);
+if(!W.LumenSite)$$('#book [data-sms="book"]').forEach(x=>{x.href=smsHref(ns.text||Q.text);});
 }
 function depHTML(d,trip){
 const amt=d&&d.amount;
@@ -504,20 +522,24 @@ return{vehicle:x.vehicle,answers:a,result:B.recommend(a,x.vehicle,P,cfg),name:tr
 if(st.vehicle)list.push({vehicle:st.vehicle,answers:st.answers,result:B.recommend(st.answers,st.vehicle,P,cfg),name:tripName(st.vehicle),saved:null});
 return list;
 }
-function tripBar(){ 
-return`<p class="q-tb-h">On this trip</p><ul class="q-tbl">${tripEntries().filter(x=>x.saved!=null).map(x=>`<li><span>${esc(x.name)} · ${esc(B.serviceLabel(x.result))}</span> <b>${x.result.route==='quoted'?'Quoted':money(x.result.total)}</b> <button type="button" class="link-btn" data-act="trip-rm" data-n="${x.saved}" aria-label="Remove ${esc(x.name)} from the trip">Remove</button></li>`).join('')}</ul>`;
+const tripBtns=x=>`<button type="button" class="link-btn" data-act="trip-edit" data-n="${x.saved}" aria-label="Edit ${esc(x.name)}">Edit</button><button type="button" class="link-btn" data-act="trip-rm" data-n="${x.saved}" aria-label="Remove ${esc(x.name)} from the trip">Remove</button>`;
+function tripBar(){
+return`<p class="q-tb-h">On this trip</p><ul class="q-tbl">${tripEntries().filter(x=>x.saved!=null).map(x=>`<li><span class="q-tbn">${esc(x.name)} · ${esc(B.serviceLabel(x.result))}</span> <b>${x.result.route==='quoted'?'Quoted':money(x.result.total)}</b> <span class="q-tbb">${tripBtns(x)}</span></li>`).join('')}</ul>`+
+`<p class="q-tbk"><button type="button" class="link-btn" data-act="trip-back">Back to my ${st.trip.length===1?'quote':'trip'}</button></p>`;
 }
 function tripHTML(E,T){
 const lines=E.map((x,n)=>{
 const ln=T.lines[n],r=x.result,cur=x.saved==null;
-return`<li class="q-tl${cur?' is-cur':''}"><p><span>${esc(x.name)}${cur?' <em>this quote</em>':''}</span><small>${esc(B.serviceLabel(r))}${r.interiorQuoted?' · interior quoted from photos':''}</small>${cur?'':`<button type="button" class="link-btn" data-act="trip-rm" data-n="${x.saved}" aria-label="Remove ${esc(x.name)} from the trip">Remove</button>`}</p><b>${r.route==='quoted'?'Quoted':money(ln.total)}</b></li>`+
+return`<li class="q-tl${cur?' is-cur':''}"><p><span>${esc(x.name)}${cur?' <em>this quote</em>':''}</span><small>${esc(B.serviceLabel(r))}${r.interiorQuoted&&r.route!=='quoted'?' · interior quoted from photos':''}</small>${cur?'':`<span class="q-tbb">${tripBtns(x)}</span>`}</p><b>${r.route==='quoted'?'Quoted':money(ln.total)}</b></li>`+
 (ln.discount?`<li class="q-tl q-tl-off"><p><span>${pct(T.pct)} off this vehicle</span><small>Every vehicle after the highest-priced one on the same trip</small></p><b>−${money(ln.discount)}</b></li>`:'');
 }).join('');
 const tr=T.travel?`<li class="q-tl q-tl-off"><p><span>Travel, once for the trip</span></p><b>+${money(T.travel)}</b></li>`:'';
-return`<section class="q-trip" aria-labelledby="q-trip-h"><h5 class="q-trip-h" id="q-trip-h">Your trip · ${E.length} vehicles</h5><ul class="q-tls">${lines}${tr}</ul><div class="q-ttot"><span>Trip estimate</span> <b>${money(T.total)}</b></div></section>`;
+const lng=T.total?B.tripLong(E.reduce((m,x)=>m+(x.result.minutes||0),0),P):null;
+return`<section class="q-trip" aria-labelledby="q-trip-h"><h5 class="q-trip-h" id="q-trip-h">Your trip · ${E.length} vehicles</h5><ul class="q-tls">${lines}${tr}</ul><div class="q-ttot"><span>Trip estimate</span> <b>${T.total?money(T.total):'Quoted'}</b></div>${lng?`<p class="q-tlong">${esc(lng)}.</p>`:''}</section>`;
 }
 function addVehicle(){ 
 if(!st.vehicle)return;
+const saved=st.vehicle;
 st.trip.push({vehicle:st.vehicle,answers:JSON.parse(JSON.stringify(st.answers))});
 const where=st.answers.where;
 st.vehicle=null;st.row=null;st.sf=[];st.sv=null;st.hist=[];st.step=1;
@@ -527,12 +549,37 @@ lt('trip_add');
 save();paint();
 root.scrollIntoView({behavior:mq('(prefers-reduced-motion: no-preference)')?'smooth':'instant',block:'start'});
 if(c1)c1.input.focus({preventScroll:true});
+say(`${tripName(saved)} saved to your trip. Vehicle ${st.trip.length+1}: what are we detailing?`); 
+}
+function makeCurrent(x){
+st.vehicle=x.vehicle;st.answers=fit(Object.assign({},x.answers,{where:st.answers.where}),x.vehicle,false);
+st.row=x.vehicle&&DB&&!x.vehicle.manual?findRow(x.vehicle.make,x.vehicle.model,x.vehicle.year):null;
+st.sf=[];st.sv=null;st.hist=[];st.step=6;ui=freshUI();syncQ();
+LS.setVehicle(st.vehicle);save();paint();
+const h=$('#q-h',root);if(h)h.focus({preventScroll:true});
+const top=root.getBoundingClientRect().top;
+if(top<0||top>innerHeight*0.6)root.scrollIntoView({behavior:mq('(prefers-reduced-motion: no-preference)')?'smooth':'instant',block:'start'});
+}
+function tripBack(){ 
+if(!st.trip.length)return;
+const last=st.trip.pop();
+makeCurrent(last);
+say(st.trip.length?`Back to your trip: ${tripName(last.vehicle)} reopened.`:`Back to your quote for the ${tripName(last.vehicle)}.`);
+}
+function tripEdit(n){ 
+if(!(n>=0&&n<st.trip.length))return;
+const x=st.trip.splice(n,1)[0];
+if(st.vehicle)st.trip.push({vehicle:st.vehicle,answers:JSON.parse(JSON.stringify(st.answers))});
+makeCurrent(x);
+say(`Editing ${tripName(x.vehicle)}.`);
 }
 function tripRemove(n){
 if(!(n>=0&&n<st.trip.length))return;
-st.trip.splice(n,1);
+const x=st.trip.splice(n,1)[0];
 save();paint();
+if(st.step!==6)refreshBooked(); 
 const h=$('#q-h',root);if(h)h.focus({preventScroll:true}); 
+say(`${tripName(x.vehicle)} removed from the trip.`);
 }
 function go(n,push){
 if(push)st.hist.push(st.step);
@@ -574,34 +621,41 @@ LS.vehicle=null;fire('lumen:vehicle',null);
 paint();
 if(c1)c1.input.focus();
 }
+function quoteOf(E){
+if(!E.length)return null;
+if(E.length===1){
+const x=E[0],text=B.summaryText(x.result,vText(x.vehicle),x.answers,cfg);
+return{text,trip:null,selection:Object.assign(B.selectionFor(x.result,x.vehicle,x.answers,Date.now()),{label:serviceLabel(x.result),text})};
+}
+const TE=E.map(x=>({result:x.result,vehicle:vText(x.vehicle),answers:x.answers,name:x.name}));
+const text=B.tripText(TE,P,cfg);
+return{text,trip:B.tripTotals(E.map(x=>x.result),P.model),selection:Object.assign(B.tripSelection(TE,P,Date.now()),{label:`${E.length} vehicles`,text})};
+}
 function current(){
 const v=st.vehicle;
 if(!v)return null;
-const a=st.answers,r=B.recommend(a,v,P,cfg);
-if(!st.trip.length){
-const text=B.summaryText(r,vText(v),a,cfg);
-return{vehicle:v,answers:a,result:r,text,entries:null,trip:null,
-selection:Object.assign(B.selectionFor(r,v,a,Date.now()),{label:serviceLabel(r),text})};
-}
-const E=tripEntries(),TE=E.map(x=>({result:x.result,vehicle:vText(x.vehicle),answers:x.answers,name:x.name}));
-const text=B.tripText(TE,P,cfg),sel=B.tripSelection(TE,P,Date.now());
-return{vehicle:v,answers:a,result:r,text,entries:E,trip:B.tripTotals(E.map(x=>x.result),P.model),
-selection:Object.assign(sel,{label:`${E.length} vehicles`,text})};
+const E=tripEntries(),Q=quoteOf(E),trip=st.trip.length>0;
+return{vehicle:v,answers:st.answers,result:E[E.length-1].result,text:Q.text,entries:trip?E:null,trip:trip?Q.trip:null,selection:Q.selection};
 }
 function book(){
 const q=current();
 if(!q)return;
-sSet(SELKEY,q.selection);
-fire('lumen:selection',q.selection);
+const bs=sGet(SELKEY);
+const cards=bs&&bs.quoteId?(bs.vehicles||[]).filter(x=>x&&x.card)
+:bs&&bs.v===2&&!bs.quoteId&&bs.route==='powersports'&&bs.total>0&&(bs.vehicles||[]).length===1
+?[Object.assign({},bs.vehicles[0],{route:'powersports',back:'powersports'})]:[];
+const s=B.withCards(q.selection,cards,P.model);
+sSet(SELKEY,s);
+fire('lumen:selection',s);
 lt('book_click');
 if(W.LumenSite)return;
-const s=q.selection,p=D.getElementById('selection'),n=s.vehicles.length;
+const p=D.getElementById('selection'),n=s.vehicles.length;
 if(p){
 const what=n>1?`${n} vehicles · ${s.vehicles.map(x=>x.label).join(' + ')}`:`${s.vehicles[0].label} · ${s.vehicles[0].name}`;
 p.innerHTML=`Your selection: ${esc(what)} · ${s.total?money(s.total)+' estimate':'quoted from photos'}${s.multiDiscount?` (${pct(s.multiPct)} off ${n===2?'the second':'each additional one'})`:''}${s.deposit?` · ${money(s.deposit)} deposit holds the date`:''} · <a href="#quote">Edit</a>`;
 p.hidden=false;
 }
-$$('#book [data-sms="book"]').forEach(x=>{x.href=smsHref(q.text);});
+$$('#book [data-sms="book"]').forEach(x=>{x.href=smsHref(s.text||q.text);});
 }
 function copy(btn){
 const q=current();
@@ -711,7 +765,7 @@ root.classList.add('q-on');
 root.setAttribute('role','region');
 root.setAttribute('aria-labelledby','q-title');
 const mold=esc(B.STRINGS.mold).replace('Text photos',`<a href="${esc(smsHref(BODY.disaster))}" data-act="sms">Text photos</a>`);
-root.innerHTML=`<div class="q-top"><h3 id="q-title" class="q-title">Get my price</h3><p class="q-sub">A price for your exact vehicle, in about a minute. An estimate, confirmed at the walkaround.</p></div><p class="q-rst" id="q-rst" hidden></p><div class="q-tb" id="q-tb" hidden></div><div class="q-prog"><p id="q-pt"></p><div class="q-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div><div id="q-body"></div><p class="q-mold">${mold}</p><div class="q-nav" id="q-nav"></div>`;
+root.innerHTML=`<div class="q-top"><h3 id="q-title" class="q-title">Get my price</h3><p class="q-sub">A price for your exact vehicle, in about a minute. An estimate, confirmed at the walkaround.</p></div><p class="q-rst" id="q-rst" hidden></p><div class="q-tb" id="q-tb" hidden></div><div class="q-prog"><p id="q-pt"></p><div class="q-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div><div id="q-body"></div><p class="q-mold">${mold}</p><div class="q-nav" id="q-nav"></div><p class="sr-only" id="q-ann" aria-live="polite"></p>`;
 body=$('#q-body',root);nav=$('#q-nav',root);
 root.addEventListener('click',e=>{
 const a=e.target.closest('[data-act],[data-lvl]');
@@ -726,6 +780,8 @@ else if(k==='reset')reset();
 else if(k==='lvl'){st.answers.level=String(+a.dataset.level);save();paintR();const x=$('input[name="q-rlevel"]:checked',root);if(x)x.focus();}
 else if(k==='addveh')addVehicle();
 else if(k==='trip-rm')tripRemove(+a.dataset.n);
+else if(k==='trip-edit')tripEdit(+a.dataset.n);
+else if(k==='trip-back')tripBack();
 else if(k==='copy')copy(a);
 else if(k==='sms')lt('sms_click');
 else if(k==='book')book();

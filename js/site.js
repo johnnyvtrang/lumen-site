@@ -239,10 +239,11 @@ const offNote=s=>(s.multiDiscount?' ('+(MULTI?pct(MULTI.additional_off)+' ':'')+
 function bookBody(s){ 
 const own=s.text||s.body;
 if(typeof own==='string'&&own)return own;
-const a=(s.adjustments||[])[0],amt=a?money(Math.abs(a.amount)):'',x=s.vehicles[0],n=extras(x),L=[],dep=depAmt(s.deposit);
+const a=(s.adjustments||[])[0],amt=s.travel?money(s.travel):a?money(Math.abs(a.amount)):'',x=s.vehicles[0],n=extras(x),L=[],dep=depAmt(s.deposit);
 L.push('Hi Johnny, I\'d like to book'+(s.quoteId?' (Q-'+s.quoteId+')':'')+':');
 if(many(s)){
-s.vehicles.forEach((y,i)=>L.push((y.name||'Vehicle '+(i+1))+': '+label(y)+' '+(y.total!=null?money(y.total):'quoted from photos')));
+s.vehicles.forEach((y,i)=>L.push((y.name||'Vehicle '+(i+1))+': '+label(y)+' '+(y.total!=null?money(y.total):y.priceText||'quoted from photos')
++(y.discount?' ('+(MULTI?pct(MULTI.additional_off)+' ':'')+'off: '+money(-y.discount)+')':'')));
 if(s.multiDiscount)L.push('Multi-vehicle'+offNote(s)+': −'+money(Math.abs(s.multiDiscount)));
 }else{
 L.push(x.name||'My car: '); 
@@ -251,7 +252,7 @@ if(n&&Array.isArray(x.items))L.push('+ '+n+': '+money(x.items.reduce((t,y)=>t+(y
 }
 if(s.where)L.push('Where: '+(s.where==='studio'?'studio drop-off (−'+amt+')':s.where==='ext'?'mobile, Extended zone (+'+amt+')'
 :s.where==='reg'?'mobile, Regional zone (+'+amt+')':'mobile, core valley (no travel fee)'));
-if(s.total)L.push('Estimate '+money(s.total)+' before tax'+(!many(s)&&s.minutes&&P?' · '+P.hoursLabel(s.minutes).replace(/hour(s?)$/,'hr$1'):''));
+if(s.total)L.push((many(s)?'Trip estimate ':'Estimate ')+money(s.total)+' before tax'+(!many(s)&&s.minutes&&P?' · '+P.hoursLabel(s.minutes).replace(/hour(s?)$/,'hr$1'):''));
 if(dep)L.push('Deposit to hold the date: '+money(dep));
 L.push('Day/time that works: ');
 return L.join('\n').slice(0,600);
@@ -277,7 +278,7 @@ p.hidden=!sel;
 if(!sel)return;
 const b=d.createElement('button'),dep=depAmt(sel.deposit),parts=[];
 if(many(sel)){ 
-parts.push(sel.vehicles.length+' vehicles',sel.vehicles.map(label).join(' + '),
+parts.push(sel.vehicles.length+' vehicles',sel.vehicles.map(y=>label(y)+(y.card&&y.name?' ('+y.name+')':'')).join(' + '),
 sel.total?money(sel.total)+' estimate'+offNote(sel):'quoted from photos',
 sel.total&&!sel.vehicles.some(y=> /quoted/i.test(label(y)))
 &&sel.vehicles.some(y=>y.interiorQuoted||(y.itype==='quote'&&y.track!=='e'))?'interior quoted from photos':'');
@@ -291,7 +292,26 @@ if(dep)parts.push(money(dep)+' deposit holds the date');
 p.append('Your selection: '+parts.filter(Boolean).join(' · ')+' · ');
 b.type='button';b.className='link-btn';b.textContent='Edit';b.setAttribute('data-edit-selection','');
 p.append(b);
+sel.vehicles.forEach((y,i)=>{
+if(!y.card||!sel.quoteId)return;
+const r=btn('Remove '+(y.name||'this vehicle'),'data-rm-card',String(i));
+r.setAttribute('aria-label','Remove '+(y.name||'this vehicle')+' from your booking');
+p.append(' · ',r);
+});
 }
+const btn=(text,attr,val)=>{const x=d.createElement('button');x.type='button';x.className='link-btn';x.textContent=text;x.setAttribute(attr,val||'');return x;};
+let pending=null;
+function ask(s,cur){
+const p=byId('selection');
+if(!p)return;
+pending=s;
+const n=cur.vehicles.length,x=s.vehicles[0];
+const what=label(s)+(x.name&&x.name!==label(s)?' · '+x.name:'')+(s.total?' · '+money(s.total)+' estimate':x.priceText?' · '+x.priceText:'');
+p.textContent='';p.hidden=false;
+p.append('You already have '+(n>1?'a '+n+'-vehicle quote':'a quote for the '+(cur.vehicles[0].name||'vehicle'))+' booked. Replace it with '+what+'? ',
+btn('Replace it','data-sel-replace'),' ',btn('Keep my quote','data-sel-keep'));
+}
+function commit(s){store('lumen_selection',s);fire('lumen:selection',s);}
 function book(el){
 if(!P)return;
 const key=el.getAttribute('data-book'),t=el.getAttribute('data-track'),L=+el.getAttribute('data-level'),V=veh(),v=V.v||{};
@@ -325,8 +345,16 @@ levelLabel:t?levelName(L-1):null,total:price,label:lab,priceText:priceText||null
 subtotal:price,multiDiscount:0,total:price,deposit:route==='plan'?null:depositFor(price),where:null,
 route,kind:PF[key]||null,base:price,items:[],adjustments:[],minutes,createdAt:Date.now(),label:lab,key:k||key};
 if(back)s.back=back; 
-store('lumen_selection',s);
-fire('lumen:selection',s);
+const cur=norm(store('lumen_selection')),Bq=w.LumenBuilder;
+if(cur&&cur.quoteId){
+if(route==='powersports'&&price>0&&Bq&&Bq.withCards){
+const card=Object.assign({},s.vehicles[0],{route,back});
+const cards=cur.vehicles.filter(y=>y.card&&y.name!==card.name).concat(card);
+return commit(Bq.withCards(cur,cards,M));
+}
+return ask(s,cur);
+}
+commit(s);
 }
 function onClick(e){
 const a=e.target.closest('a,button');
@@ -341,6 +369,15 @@ if(!q.hasAttribute('tabindex'))q.setAttribute('tabindex','-1');
 return q.focus({preventScroll:true});
 }
 if(ours&&a.matches('[data-book]'))book(a);
+if(a.matches('[data-sel-replace]')){const s=pending;pending=null;if(s)commit(s);else showSel(store('lumen_selection'));return;}
+if(a.matches('[data-sel-keep]')){pending=null;return showSel(store('lumen_selection'));}
+if(a.matches('[data-rm-card]')){ 
+const cur=norm(store('lumen_selection')),i=+a.getAttribute('data-rm-card'),Bq=w.LumenBuilder;
+if(!cur||!cur.vehicles[i]||!Bq)return;
+commit(Bq.withCards(cur,cur.vehicles.filter((y,k)=>y.card&&k!==i),M));
+const p=byId('selection'),f=p&&p.querySelector('[data-edit-selection]');
+return f&&f.focus();
+}
 if(a.matches('[data-book-online]')){ 
 const text=sel?bookBody(sel):(B.book||'')+((S.vehicle&&S.vehicle.name)||'');
 try{navigator.clipboard.writeText(text).then(()=>toast('Quote copied — paste it into the booking notes.'),()=>{});}catch(x){ }
@@ -364,7 +401,13 @@ try{el=byId(decodeURIComponent(id));}catch(e){ }
 for(;el;el=el.parentElement)if(el.tagName==='DETAILS')el.open=true;
 }
 const fields=f=>$$('input:not([type=hidden]):not(.hp),select,textarea',f);
-const labelOf=(f,x)=>txt(x.id&&f.querySelector('label[for="'+x.id+'"]'))||x.name;
+const labelOf=(f,x)=>txt(x.id&&f.querySelector('label[for="'+x.id+'"]')).replace(/\s*\(optional\)$/,'')||x.name;
+const describe=(el,id,on)=>{
+const l=(el.getAttribute('aria-describedby')||'').split(/\s+/).filter(x=>x&&x!==id);
+if(on)l.push(id);
+if(l.length)el.setAttribute('aria-describedby',l.join(' '));else el.removeAttribute('aria-describedby');
+};
+const unmark=(f,x)=>{const st=f.querySelector('.form-status');x.removeAttribute('aria-invalid');if(st&&st.id)describe(x,st.id,false);};
 const formBody=(f,kind)=> 
 [(B[kind==='waitlist'?'ceramic':kind]||'Hi Johnny,').replace(/\s*[^.]*:\s*$/,'')]
 .concat(fields(f).filter(x=>x.value.trim()).map(x=>labelOf(f,x).replace(/\?$/,'')+': '+x.value.trim())).join('\n');
@@ -387,8 +430,9 @@ function submit(f){
 const kind=f.getAttribute('data-form'),st=f.querySelector('.form-status')||d.createElement('p');
 const btn=f.querySelector('[type=submit]'),hp=f.querySelector('.hp');
 if(hp&&hp.value)return; 
+fields(f).forEach(x=>unmark(f,x));
 const bad=invalid(f);
-if(bad){st.textContent=bad[1];bad[0].setAttribute('aria-invalid','true');return bad[0].focus();}
+if(bad){st.textContent=bad[1];bad[0].setAttribute('aria-invalid','true');if(st.id)describe(bad[0],st.id,true);return bad[0].focus();}
 const ep=(C.formEndpoint||{})[kind]||f.getAttribute('action'),body=formBody(f,kind);
 st.textContent='';
 if(!ep){ 
@@ -465,7 +509,7 @@ d.addEventListener('lumen:selection',guard(e=>showSel(e.detail)));
 w.addEventListener('hashchange',guard(()=>openTarget(location.hash.slice(1))));
 $$('form[data-form]').forEach(f=>{
 f.addEventListener('submit',e=>{e.preventDefault();guard(()=>submit(f))();});
-f.addEventListener('input',e=>e.target.removeAttribute('aria-invalid'));
+f.addEventListener('input',e=>unmark(f,e.target));
 });
 });
 safe('pickers',initPickers);

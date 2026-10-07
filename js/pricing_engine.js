@@ -10,9 +10,11 @@ const T=k=>{const v=T0[k];if(!v)throw new Error('Unknown vehicle type '+k);retur
 const sum=(areas,level,veh)=>{let t=0;for(const k in areas)t+=areas[k].min[level]*veh[areas[k].factor];return t;};
 const INC=M.included;
 function always(track,level){
-const a=INC.always[String(level)];
-if(!a||a.tracks.indexOf(track)<0)return[0,0];
-return[a.ws_ceramic.min,a.ws_ceramic.product_usd];
+const a=(INC.always||{})[String(level)];
+if(!a||(a.tracks||'').indexOf(track)<0)return[0,0];
+let mn=0,usd=0;
+for(const k in a)if(k!=='tracks'&&a[k]&&typeof a[k]==='object'){mn+=a[k].min||0;usd+=a[k].product_usd||0;}
+return[mn,usd];
 }
 function minutes(track,level,e,i){
 i=i||e;
@@ -47,10 +49,10 @@ if(kind){
 const pr=INC.protected[kind],hasI=kind==='pfull';
 return{car_seat:hasI?pr.car_seat||0:0,gear:pr.gear||0,trim_restore:false,ws_ceramic:false,glass_spots:kind==='reseal'};
 }
-const hasE=track==='e'||track==='f',hasI=track==='i'||track==='f',a=INC.always[String(level)];
+const hasE=track==='e'||track==='f',hasI=track==='i'||track==='f',a=(INC.always||{})[String(level)];
 const gf=ADD.water_light.glass_credit_from_level==null?2:ADD.water_light.glass_credit_from_level;
 return{car_seat:hasI?al.car_seat[level]:0,gear:hasE?al.gear[level]:0,trim_restore:hasE&&level>=fl.trim_restore,
-ws_ceramic:!!(a&&a.tracks.indexOf(track)>=0),glass_spots:hasE&&level>=gf};
+ws_ceramic:!!(a&&a.ws_ceramic&&(a.tracks||'').indexOf(track)>=0),glass_spots:hasE&&level>=gf};
 }
 function pfMinutes(kind,e,i){
 const s=PROT[kind];i=i||e;

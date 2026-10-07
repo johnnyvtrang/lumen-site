@@ -151,11 +151,8 @@ polishMaybe:'Only if etched spots are still there after the chemical spot remova
 cheaperCrp:'Clean, Restore & Protect covers this work for no more than Clean & Protect plus add-ons',
 trimIncludedLine:'Faded trim restored — part of this level.',
 includedWhy:'Part of this level.',
+alcantaraHeadliner:'If your headliner is Alcantara, it gets the Alcantara method under the headliner line — you pay for it once.',
 };
-function wsIncludedNote(M){
-const w=M.included.always['2'].ws_ceramic;
-return`A windshield ceramic coating is part of this level. If it can't go on (the glass is already coated, or the weather is outside the product's range), ${money(w.skip_credit_usd)} comes off at the walkaround.`;
-}
 function glassPrep(P,e,i,lv){
 const M=P.model;
 return`Coatings bond to clean, smooth glass and seal in whatever is on it, so water spots and wiper haze come off first: light spots chemically `+
@@ -323,7 +320,7 @@ o=o||{};
 const qty=o.qty||1,lv=o.lv==null?null:o.lv;
 const r=P.addon(key,e,i,lv,o.opt);
 const d=M.addons[key]||M.modifiers[key]||{};
-const l2=lv!=null&&((d.l2_credit&&lv>=(d.glass_credit_from_level==null?2:d.glass_credit_from_level))||(lv===2&&d.crp_credit_addon));
+const l2=lv!=null&&d.l2_credit&&lv>=(d.glass_credit_from_level==null?2:d.glass_credit_from_level);
 const label=o.label||(l2&&d.l2_label)||LABEL[key]||d.label;
 items.push({key,label:label+(qty>1&&!o.label?` ×${qty}`:''),short:(o.short||SHORT[key]||label)+(qty>1?` ×${qty}`:''),
 qty,price:r.price*qty,minutes:r.minutes*qty,why,level:lv,source:o.source||'answer',opt:o.opt||null});
@@ -366,6 +363,7 @@ note('smoke',`Smoke odor: I confirm from photos. Heavy smoke damage may need a D
 }
 if(a.headliner==='yes')add('headliner',WHY.headliner);
 if(a.seats==='alcantara')add('alcantara',WHY.alcantara);
+if(a.seats==='alcantara'&&a.headliner==='yes')note('alcantara_headliner',STRINGS.alcantaraHeadliner);
 if(a.seats==='suede')note('suede',STRINGS.suede); 
 if(forcedExtraction)note('neglect_photos',STRINGS.neglectPhotos);
 if(a.lived==='heavy')addHeavySoil(lv);
@@ -450,8 +448,6 @@ note('lenses',`Large, luxury or complex lenses +${money(HL_LARGE_LENS)}, confirm
 const v=c.v;
 if((!hasE||a.headlights==='clear')&&v.year&&c.nowYear-Number(v.year)>=M.policy.headlight_age_years)
 note('hl_age',`A ${v.year} is the age when headlights start to yellow — add restoration for ${money(M.addons.hl_polish.base)}–${M.addons.hl_restore.base} with this visit.`);
-const wsIn=hasE&&!prot&&P.included(level,pt).ws_ceramic;
-if(wsIn)note('ws_included',wsIncludedNote(M));
 const chosen=c.a.extras;
 const fromAnswers=items.slice();
 const shampooAdded=fromAnswers.some(x=> /^shampoo_/.test(x.key));
@@ -483,11 +479,10 @@ if(hasE&&isTruck(e)&&!has(a.acc,'bed')&&!has(a.acc,'tonneau')&&!has(a.acc,'cap')
 return ex.filter((x,n)=>n<MAX_EXTRAS||x.checked).concat(hasE?glassExtras():[],hasE?specialExtras():[]);
 }
 function glassExtras(){
-const out=[],allX=has(chosen,'all_glass_ceramic'),wsX=wsIn||(!allX&&has(chosen,'ws_ceramic'));
-const glv=wsIn?2:null;
-const offer=(key,extra)=>out.push(Object.assign({key,label:(glv&&M.addons[key].l2_label)||M.addons[key].label,price:P.addon(key,e,i,glv).price,
-enabled:true,reason:null,checked:has(chosen,key),group:'glass',level:glv},extra||{}));
-if(!wsIn)offer('ws_ceramic',allX?{enabled:false,checked:false,reason:STRINGS.glassIncluded}:null);
+const out=[],allX=has(chosen,'all_glass_ceramic'),wsX=!allX&&has(chosen,'ws_ceramic');
+const offer=(key,extra)=>out.push(Object.assign({key,label:M.addons[key].label,price:P.addon(key,e,i).price,
+enabled:true,reason:null,checked:has(chosen,key),group:'glass',level:null},extra||{}));
+offer('ws_ceramic',allX?{enabled:false,checked:false,reason:STRINGS.glassIncluded}:null);
 offer('all_glass_ceramic');
 if(a.water==='heavy'&&(allX||wsX)){
 const pk=allX?'glass_polish':'ws_polish',g=M.glass_wheels.items[pk];
@@ -526,7 +521,7 @@ const o=x.options.find(y=>y.key===x.selected);
 add(o.key,WHY.extra,{lv:o.level,source:'extra'});
 }else add(x.key,WHY.extra,{lv:null,source:'extra',label:x.label});
 }
-if(wsIn||items.some(x=>x.key==='ws_ceramic'||x.key==='all_glass_ceramic')){
+if(items.some(x=>x.key==='ws_ceramic'||x.key==='all_glass_ceramic')){
 const wi=items.find(x=>x.key==='water_light'||x.key==='water_heavy'),wr=notes.find(n=>n.key==='water_reseal');
 if(wi)wi.why=`${wi.why} ${WHY.coat_prep}`;
 else if(wr)wr.text=`${wr.text} ${WHY.coat_prep}`;
@@ -614,8 +609,8 @@ const WHY_LEVEL={
 cp:{f:'a ceramic soap layer outside (1–3 months) and a steam-cleaned, UV-protected interior.',i:'steam-cleaned and UV-protected, with leather protected.',
 e:'iron and tar removal plus a ceramic soap layer (1–3 months).'},
 clean:{f:'Hand wash and spray wax outside, thorough vacuum and wipe-down inside.',i:'Thorough vacuum and wipe-down inside.',e:'Hand wash and spray wax outside.'},
-crp:{f:'Hand-applied ceramic spray outside (6–12 months) plus a windshield ceramic coating, fully restored inside.',i:'Fully steamed, leather conditioned, fabric protected.',
-e:'Clay, faded trim restored + hand-applied ceramic spray on paint and wheels (6–12 months) and a windshield ceramic coating.'},
+crp:{f:'Hand-applied ceramic spray outside (6–12 months), fully restored inside.',i:'Fully steamed, leather conditioned, fabric protected.',
+e:'Clay, faded trim restored + hand-applied ceramic spray on paint and wheels (6–12 months).'},
 };
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function whyText(pt,level,explicit,reasons,route,kind,a,restoReason){
@@ -642,7 +637,6 @@ const gearNames=names.slice(incl(lo,'accessory'),incl(hi,'accessory'));
 if(incl(hi,'truck_bed')>incl(lo,'truck_bed'))gearNames.push('truck bed');
 if(gearNames.length)out.push(gearNames.length>1?gearNames.slice(0,-1).join(', ')+' and '+gearNames[gearNames.length-1]:gearNames[0]);
 if(incl(hi,'trim_restore')>incl(lo,'trim_restore'))out.push('faded-trim restoration');
-if(lo.items.some(x=>x.key==='ws_ceramic')&&!hi.items.some(x=>x.key==='ws_ceramic')&&hi.notes.some(n=>n.key==='ws_included'))out.push('windshield ceramic coating');
 if(!out.length)return null;
 return out.length>1?out.slice(0,-1).join(', ')+' and '+out[out.length-1]:out[0];
 }
@@ -669,6 +663,11 @@ r.levels=[0,1,2].map(l=>{
 const x=run(c,l);
 return{level:l,label:x.levelLabel,total:x.total,route:x.route};
 });
+const tn=r.notes.find(n=>n.key==='trim_crp'),l2=r.levels[2];
+if(tn){
+if(l2.route==='standard'&&l2.total>r.total)tn.text=`Lightly faded trim is revived at Clean, Restore & Protect (+${money(l2.total-r.total)} for your answers).`;
+else r.notes.splice(r.notes.indexOf(tn),1);
+}
 r.quoteId=quoteId(vehicle,answers);
 return r;
 }
@@ -784,9 +783,11 @@ list.forEach((x,n)=>{if(x.total>list[full].total)full=n;});
 const lines=list.map((x,n)=>({name:x.name,total:x.total,discount:list.length>1&&n!==full?pyRound(x.total*off):0}));
 const subtotal=lines.reduce((s,x)=>s+x.total,0),discount=lines.reduce((s,x)=>s+x.discount,0);
 const travel=rs.reduce((m,r)=>Math.max(m,travelOf(r)),0);
-const total=subtotal-discount+travel;
+const total=subtotal>0?subtotal-discount+travel:0;
 return{lines,subtotal,discount,travel,total,deposit:depositFor(total,M),full:list.length?full:null,pct:off};
 }
+const tripLong=(minutes,P)=>(minutes>P.model.policy.long_job_minutes
+?`${cap(hrsShort(P.hoursLabel(minutes)))} in all — I'll book it over back-to-back days`:null);
 function tripText(entries,P,cfg){
 const E=entries||[];
 if(!E.length)return'';
@@ -796,28 +797,38 @@ const wr=E.map(x=>x.result).find(r=>travelOf(r)===T.travel)||E[0].result;
 const minutes=E.reduce((s,x)=>s+(x.result.minutes||0),0);
 const head=`Hi Johnny, trip quote from your site (Q-${tripId(E)}), ${E.length} vehicles:`;
 const quotedAny=E.some(x=>x.result.route==='quoted'||x.result.interiorQuoted);
-const tail=[whereText(wr,true),`Trip estimate ${money(T.total)} before tax${quotedAny?' (priced parts)':''}${minutes?' · '+hrsShort(P.hoursLabel(minutes)):''}`,
-depositLine(T.deposit),'Day/time that works:'].filter(Boolean);
-const build=(lvl)=>{
-const L=[head];
+const est=T.total?`Trip estimate ${money(T.total)} before tax${quotedAny?' (priced parts)':''}${minutes?' · '+hrsShort(P.hoursLabel(minutes)):''}`
+:'Trip estimate: quoted from photos';
+const tailTxt=[whereText(wr,true),est,T.total?tripLong(minutes,P):null,depositLine(T.deposit),'Day/time that works:'].filter(Boolean).join('\n');
+const net=n=>T.lines[n].total-T.lines[n].discount;
+const lines=(lvl,k)=>{
+const L=[];
 E.forEach((x,n)=>{
+if(lvl>=4&&n>=k)return;
 const r=x.result,v=x.vehicle||{},ln=T.lines[n],items=r.items||[];
-const riders=arr(x.answers&&x.answers.riders).filter(k=>RIDER_NAME[k]);
+const riders=arr(x.answers&&x.answers.riders).filter(q=>RIDER_NAME[q]);
 const vn=clip(smsName(v),lvl>=3?26:lvl>=2?40:0),ty=typeShort(r,v);
 const off=ln.discount?` (${pct}% off: −${money(ln.discount)})`:'';
+if(lvl>=4){L.push(`${n+1}) ${vn}: ${r.route==='quoted'?'quoted from photos':money(ln.total)+(ln.discount?` −${money(ln.discount)}`:'')}`);return;}
 const what=r.route==='quoted'?'Interior: quoted from photos'
 :`${r.baseLabel}${items.length?lvl===0?' + '+items.map(y=>y.short||y.label).join(', '):` + ${items.length} ${items.length===1?'extra':'extras'}`:''}`+
 `${r.interiorQuoted?', interior quoted':''}: ${money(ln.total)}${off}`;
 if(lvl<=1){
-L.push(`${n+1}) ${vn}${ty?` (${ty})`:''}${r.track!=='e'&&riders.length&&lvl===0?` · riders: ${riders.map(k=>RIDER_NAME[k]).join(', ')}`:''}`);
+L.push(`${n+1}) ${vn}${ty?` (${ty})`:''}${r.track!=='e'&&riders.length&&lvl===0?` · riders: ${riders.map(q=>RIDER_NAME[q]).join(', ')}`:''}`);
 L.push(what);
 if(lvl===0)specLinesOf(r).forEach(l=>L.push(l));
 }else L.push(`${n+1}) ${vn}: ${what}`);
 });
-return L.concat(tail).join('\n');
+if(lvl>=4&&k<E.length){
+const rest=E.length-k,sum=E.slice(k).reduce((s,x,n)=>s+net(k+n),0);
+L.push(`+ ${rest} more vehicle${rest>1?'s':''}: ${money(sum)}`);
+}
+return L;
 };
-let lvl=0,text=build(lvl);
-while(text.length>SMS_MAX&&lvl<3)text=build(++lvl);
+const build=(lvl,k)=>[head].concat(lines(lvl,k),[tailTxt]).join('\n');
+let lvl=0,k=E.length,text=build(lvl,k);
+while(text.length>SMS_MAX&&lvl<4)text=build(++lvl,k);
+while(text.length>SMS_MAX&&k>0)text=build(lvl,--k);
 return fitSms(text);
 }
 function selectionOf(entries,T,now){
@@ -833,6 +844,24 @@ deposit:T.deposit.amount,depositPolicy:{share:T.deposit.share,min:T.deposit.min,
 where:first.where,createdAt:now==null?null:now};
 }
 const tripSelection=(entries,P,now)=>selectionOf(entries,tripTotals(entries.map(x=>x.result),P.model),now);
+function withCards(sel,cards,M){
+if(!sel||!Array.isArray(sel.vehicles))return sel;
+cards=Array.isArray(cards)?cards:[];
+if(!cards.length&&!sel.vehicles.some(x=>x&&x.card))return sel;
+const off=M.policy.multi_vehicle.additional_off;
+const list=sel.vehicles.filter(x=>!x.card).concat(cards.map(x=>Object.assign({},x,{card:true})));
+let full=0;
+list.forEach((x,n)=>{if((x.total||0)>(list[full].total||0))full=n;});
+const vehicles=list.map((x,n)=>Object.assign({},x,{discount:list.length>1&&n!==full?pyRound((x.total||0)*off):0}));
+const subtotal=vehicles.reduce((s,x)=>s+(x.total||0),0),discount=vehicles.reduce((s,x)=>s+x.discount,0);
+const travel=sel.travel||0,total=subtotal>0?subtotal-discount+travel:0,d=depositFor(total,M);
+const out=Object.assign({},sel,{vehicles,subtotal,multiDiscount:discount,multiPct:vehicles.length>1?off:0,travel,total,deposit:d.amount,
+depositPolicy:{share:d.share,min:d.min,noticeHours:d.noticeHours},label:vehicles.length>1?`${vehicles.length} vehicles`:vehicles[0].label});
+const bt=sel.builderText||sel.text;
+delete out.text;delete out.builderText;
+if(bt)out[cards.length?'builderText':'text']=bt;
+return out;
+}
 function selectionFor(result,vehicle,answers,now){
 const r=result,tr=travelOf(r),t=Math.max(0,r.total-tr);
 return selectionOf([{result:r,vehicle,answers}],{lines:[{total:t,discount:0}],subtotal:t,discount:0,travel:tr,total:r.total,
@@ -840,6 +869,6 @@ deposit:r.deposit,pct:0},now);
 }
 const API={recommend,QUESTIONS,LEVELS,summaryText,quoteId,questionsFor,defaultAnswers,applyRiders,selectionFor,
 specialty,STEPS,STRINGS,INTERIOR_KEYS,EXTERIOR_KEYS,HL_LARGE_LENS,
-depositFor,tripTotals,tripText,tripSelection,tripId,serviceLabel};
+depositFor,tripTotals,tripText,tripSelection,tripId,serviceLabel,withCards,tripLong};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else window.LumenBuilder=API;
 })();
