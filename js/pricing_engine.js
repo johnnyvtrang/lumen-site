@@ -114,7 +114,7 @@ const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 (function selfCheck(){
 for(const t of'eif')for(let l=0;l<3;l++)if(price(t,l,'sedan')!==A[t][l])console.warn('Lumen pricing: sedan anchor mismatch',t,l);
 for(const k in PROT)if(pfPrice(k,'sedan')!==PROT[k].anchor)console.warn('Lumen pricing: protected anchor mismatch',k);
-if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='19,39,79')console.warn('Lumen pricing: sedan Full saving is not 19/39/79');
+if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='29,59,89')console.warn('Lumen pricing: sedan Full saving is not 29/59/89');
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
 })();
 return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,plan,planOneOff,

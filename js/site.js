@@ -77,7 +77,7 @@ const snapshot=()=>$$('[data-vehicle-label],[data-type-label],[data-up-for],[dat
 const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s=>{if(s&&s.tagName==='SMALL')hide(s,h);});
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
-const lead=money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
+const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
 if(k==='pf')return lead+'a Refresh Wash + Interior Clean & Protect one-off ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one-off ('+avg+')':'the same visits one-off (about '+avg+' each)')
 +(dd>0?' — that covers priority booking and the member perks.':'.');
