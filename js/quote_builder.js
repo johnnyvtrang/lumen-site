@@ -606,11 +606,11 @@ const amount=total>0?Math.max(d.min,pyRound(total*d.share / d.round_to)*d.round_
 return{amount,share:d.share,min:d.min,noticeHours:d.notice_hours};
 }
 const WHY_LEVEL={
-cp:{f:'a ceramic soap layer outside (1–3 months) and a steam-cleaned, UV-protected interior.',i:'steam-cleaned and UV-protected, with leather protected.',
-e:'iron and tar removal plus a ceramic soap layer (1–3 months).'},
+cp:{f:'a ceramic soap layer outside (up to 3 months) and a steam-cleaned, UV-protected interior.',i:'steam-cleaned and UV-protected, with leather protected.',
+e:'iron and tar removal plus a ceramic soap layer (up to 3 months).'},
 clean:{f:'Hand wash and spray wax outside, thorough vacuum and wipe-down inside.',i:'Thorough vacuum and wipe-down inside.',e:'Hand wash and spray wax outside.'},
-crp:{f:'Hand-applied ceramic spray outside (6–12 months), fully restored inside.',i:'Fully steamed, leather conditioned, fabric protected.',
-e:'Clay, faded trim restored + hand-applied ceramic spray on paint and wheels (6–12 months).'},
+crp:{f:'Hand-applied ceramic spray outside (rated 12–18 months), fully restored inside.',i:'Fully steamed, leather conditioned, fabric protected.',
+e:'Clay, faded trim restored + hand-applied ceramic spray on paint and wheels (rated 12–18 months).'},
 };
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function whyText(pt,level,explicit,reasons,route,kind,a,restoReason){
