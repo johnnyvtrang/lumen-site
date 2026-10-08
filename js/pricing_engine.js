@@ -99,14 +99,15 @@ const restoration=(e,i)=>round9(price('f',2,e,i)+addon('shampoo_full',e,i).price
 const restorationMinutes=(e,i)=>minutes('f',2,e,i)+addon('shampoo_full',e,i).minutes+M.specialty.restoration.extra_min;
 const correction=(kind,e)=>round9(M.correction[kind].anchor*(0.1+0.9*T(e).paint));
 const cycle=(e,i)=>(2*price('f',0,e,i)+price('f',1,e,i)) / 3;
+const planOneOff=(name,freq,e,i)=>name==='std'?(freq==='q'?price('f',1,e,i):cycle(e,i)):pfPrice('refresh',e)+price('i',1,e,i);
+const roundDown59=x=>{const t=Math.floor(x),last=t%10;return last>=9?t-(last-9):last>=5?t-(last-5):t-last-1;};
 function plan(name,freq,e,i){
+if(name==='std')return roundDown59(planOneOff('std',freq,e,i)*(1-M.plans.std.save_pct[freq]));
 const a=M.plans[name].anchors;
-let d;
-if(name==='std')d=freq==='q'?price('f',1,e,i)-price('f',1,'sedan'):cycle(e,i)-cycle('sedan');
-else d=(pfPrice('refresh',e)+price('i',1,e,i))-(pfPrice('refresh','sedan')+price('i',1,'sedan'));
+const d=(pfPrice('refresh',e)+price('i',1,e,i))-(pfPrice('refresh','sedan')+price('i',1,'sedan'));
 return a[freq]+round10(d);
 }
-const planOneOff=(name,freq,e,i)=>name==='std'?(freq==='q'?price('f',1,e,i):cycle(e,i)):pfPrice('refresh',e)+price('i',1,e,i);
+const planSavePct=(name,freq,e,i)=>{const one=planOneOff(name,freq,e||'sedan',i);return Math.floor(100*(one-plan(name,freq,e||'sedan',i)) / one);};
 const fullSaving=(level,e,i)=>price('e',level,e)+price('i',level,e,i)-price('f',level,e,i);
 const maxSaving=(e,i)=>Math.max(fullSaving(0,e,i),fullSaving(1,e,i),fullSaving(2,e,i));
 const hoursLabel=m=>{const h=Math.max(1,Math.floor(m / 30+0.5) / 2);return h===1?'about 1 hour':`about ${h} hours`;};
@@ -115,9 +116,17 @@ const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 for(const t of'eif')for(let l=0;l<3;l++)if(price(t,l,'sedan')!==A[t][l])console.warn('Lumen pricing: sedan anchor mismatch',t,l);
 for(const k in PROT)if(pfPrice(k,'sedan')!==PROT[k].anchor)console.warn('Lumen pricing: protected anchor mismatch',k);
 if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='29,59,89')console.warn('Lumen pricing: sedan Full saving is not 29/59/89');
+if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='119,129,135,189')console.warn('Lumen pricing: Standard Care sedan ladder is not 119/129/135/189');
+for(const k of publicTypes())for(const n of['std','pf'])for(const f of['bw','m','b2','q']){
+const one=planOneOff(n,f,k),p=plan(n,f,k);
+if(!(p<one))console.warn('Lumen pricing: plan not below its one-off',n,f,k);
+if(n==='std'&&!(one-p>=M.plans.std.save_pct[f]*one-1e-9))console.warn('Lumen pricing: Standard saving below the ladder',f,k);
+}
+if(!(planSavePct('std','bw')>=planSavePct('std','m')&&planSavePct('std','m')>=planSavePct('std','b2')&&planSavePct('std','b2')>0))
+console.warn('Lumen pricing: Standard Care saving does not grow with frequency');
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
 })();
-return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,plan,planOneOff,
+return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};

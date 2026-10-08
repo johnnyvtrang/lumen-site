@@ -78,9 +78,14 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Clean & Protect one-off ('+avg+').';
-return lead+(f==='q'?'a Full Clean & Protect one-off ('+avg+')':'the same visits one-off (about '+avg+' each)')
-+(dd>0?' — that covers priority booking and the member perks.':'.');
+if(k==='pf')return lead+'a Refresh Wash + Interior Clean & Protect one at a time ('+avg+').';
+return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
+}
+function planSave(el,k,f,V){
+const dd=half(P.planOneOff(k,f,V.e,V.i)-P.plan(k,f,V.e,V.i));
+hide(el,V.q||dd<=0);
+if(k==='std')return'Save '+Math.round(100*M.plans.std.save_pct[f])+'% per visit';
+return'Save '+P.planSavePct(k,f,V.e,V.i)+'% per visit'; 
 }
 function render(){
 sync();
@@ -130,6 +135,7 @@ smalls(el,V.q);
 return V.q?'Quoted':money(P.plan(k,f,V.e,V.i));
 });
 fill('plan-oneoff',(el,k)=>{if(!M.plans[k])return undefined;hide(el,V.q);return oneoff(k,f,V);});
+fill('plan-save',(el,k)=>(M.plans[k]?planSave(el,k,f,V):undefined));
 fill('plan-cycle',el=>(f==='q'?'Full Clean & Protect every visit.':orig(el)));
 const F={pickup: /pickup$/.test(V.e),hdpickup:V.e==='hdpickup',lifted:!/^(sedan|coupe|minivan)$/.test(V.e),
 ice:!(v&&+v.ev===1),rows2:!(v&&+v.rows===1),flush:true}; 
