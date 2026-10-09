@@ -122,7 +122,13 @@ opt('none','None',{exclusive:true})]},
 opt('pods','Pods (pair)'),opt('s','Bar up to 20"'),opt('m','20–40"'),opt('l','40"+')]},
 {key:'track',step:'service',type:'single',legend:'What would you like?',options:[
 opt('f','Inside & out',{saves:true}),opt('i','Interior only'),opt('e','Exterior only')]},
+{key:'mix',step:'service',type:'toggle',legend:'Mix levels (inside and outside separately)',
+help:'Pick a different level for the inside and the outside — you still get the Full discount.',options:[opt('no','No'),opt('yes','Yes')]},
 {key:'level',step:'service',type:'single',legend:'Level',help:"Not sure? I'll recommend one from your answers.",options:[
+opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('2','Clean, Restore & Protect')]},
+{key:'level_i',step:'service',type:'single',legend:'Inside',options:[
+opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('2','Clean, Restore & Protect')]},
+{key:'level_e',step:'service',type:'single',legend:'Outside',options:[
 opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('2','Clean, Restore & Protect')]},
 {key:'where',step:'service',type:'single',legend:'Where should I do it?',help:'Not sure of your zone? See <a href="#area">Service area</a>.',options:[
 opt('core','Mobile — core valley (no travel fee)'),opt('ext','Mobile — Extended zone',{fee:'ext'}),
@@ -133,7 +139,7 @@ mold:'Mold, flood or rodents? Text photos — those start with an assessment (Di
 quotedInterior:'Interior: quoted from photos (12–15-passenger and camper interiors vary too much to price online).',
 w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), with the same price and protection steps. Undercarriage flushes are available year-round.',
 coating:"Coated by another shop? Tell me who installed it — some coating warranties also need the installer's annual inspection.",
-restoIncludes:'Restoration Detail includes full extraction, heavy pet hair, stain pre-treatment and ozone. Confirmed from photos.',
+restoIncludes:'Restoration Detail includes full extraction, heavy pet hair, stain pre-treatment and ozone; seats come out when needed to clean underneath. It usually runs overnight so everything dries fully. Confirmed from photos.',
 neglectPhotos:'Long-neglected interiors are confirmed from photos.',
 petsFree:'Light pet hair is included — no charge.',
 leatherIncluded:"Leather stains come out in this level's leather deep-clean.",
@@ -201,7 +207,7 @@ const seats=onlyAlc?'alcantara':(so.find(o=>o.value!=='alcantara'&&o.value!=='su
 return{riders:[],seats,car_seats:0,pets:'none',stains:'none',stain_where:'seats',odor:'none',headliner:'no',lived:'normal',
 outside:'normal',water:'none',headlights:'clear',protected:'no',trim:'no',
 special:specialty(vehicle).softTopPrecheck?['soft_top']:[],acc:defaultAcc(vehicle),lightbar:'pods',
-track:'f',level:'auto',where:'core',extras:[]};
+track:'f',level:'auto',mix:'no',level_i:'auto',level_e:'auto',where:'core',extras:[]};
 }
 function applyRiders(answers){
 const a=Object.assign({},answers);
@@ -231,9 +237,18 @@ if(q.key==='pets')visible=!riders||has(riders,'dogs')||has(riders,'pets');
 if(q.key==='stain_where')visible=!!a.stains&&a.stains!=='none';
 if(q.key==='lightbar')visible=has(arr(a.acc),'lightbar')&&accAllowed('lightbar',e);
 if(q.key==='special')visible=a.track!=='i'; 
+const mixable=mixOffered(vehicle,a),mixOn=mixable&&a.mix==='yes';
+if(q.key==='mix')visible=mixable;
+if(q.key==='level')visible=!mixOn;
+if(q.key==='level_i'||q.key==='level_e')visible=mixOn;
 return Object.assign({},q,{options,visible});
 });
 }
+function mixOffered(vehicle,a){
+const v=vehicle||{};
+return(a.track==null||a.track==='f')&&!(v.interiorQuoted||v.itype==='quote')&&(a.protected==null||a.protected==='no');
+}
+const levelOf=x=>(x==null||x===''||x==='auto'||!has([0,1,2],Number(x))?'auto':Number(x));
 function context(answers,vehicle,P,cfg){
 const a0=answers||{},v=vehicle||{},M=P.model;
 cfg=cfg||{};
@@ -283,26 +298,33 @@ return a[k]!==d[k];
 };
 if(track==='e')INTERIOR_KEYS.forEach(k=>changed(k)&&skipped.push(k));
 if(track==='i')EXTERIOR_KEYS.forEach(k=>changed(k)&&skipped.push(k));
+const mix=(a0.mix==='yes'||a0.mix===true)&&mixOffered(v,Object.assign({},a,{track}));
 return{a,v,P,M,e,i,quotedI,track,levelAns,where,studio,month,nowYear,sp,
+mix,levI:mix?levelOf(a0.level_i):'auto',levE:mix?levelOf(a0.level_e):'auto',
 winter:has(M.policy.winter_months,month),skipped};
 }
 function run(c,force,lift){
 const{a,P,M,e,i}=c;
-const explicit=force!=null||c.levelAns!=='auto';
+const mixed=c.mix&&force==null;
+const explicit=force!=null||(mixed?c.levI!=='auto'||c.levE!=='auto':c.levelAns!=='auto');
 const pt=c.quotedI?(c.track==='i'?null:'e'):c.track;
 const notes=[],items=[],actions=[];
 const note=(key,text)=>{if(!notes.some(n=>n.key===key))notes.push({key,text});};
 if(c.quotedI)note('quoted_interior',STRINGS.quotedInterior);
 if(pt===null)return quotedOnly(c,explicit,force,notes);
 const hasI=pt!=='e',hasE=pt!=='i';
-const reasons=[];
-if(hasI&&a.lived==='year')reasons.push("it hasn't been cleaned in a year or more");
+const reasons=[],rI=[],rE=[];
+if(hasI&&a.lived==='year')rI.push("it hasn't been cleaned in a year or more");
 if(hasI&&a.stains==='lots'&&(a.seats==='leather'||a.seats==='alcantara'||a.seats==='suede')&&a.stain_where!=='carpet')
-reasons.push(a.seats==='alcantara'?'Alcantara stains need the deep-clean':'leather stains need the deep-clean');
-if(hasE&&a.outside==='neglect')reasons.push('months without a wash need a clay treatment');
-const lifted=!!(lift&&force==null&&c.levelAns==='auto'&&!reasons.length);
+rI.push(a.seats==='alcantara'?'Alcantara stains need the deep-clean':'leather stains need the deep-clean');
+if(hasE&&a.outside==='neglect')rE.push('months without a wash need a clay treatment');
+const li=mixed?(c.levI!=='auto'?c.levI:rI.length?2:1):null;
+const le=mixed?(c.levE!=='auto'?c.levE:rE.length?2:1):null;
+if(mixed){if(c.levI==='auto')reasons.push(...rI);if(c.levE==='auto')reasons.push(...rE);}else reasons.push(...rI,...rE);
+const lifted=!!(lift&&!mixed&&force==null&&c.levelAns==='auto'&&!reasons.length);
 if(lifted)reasons.push(STRINGS.cheaperCrp);
-const level=force!=null?force:c.levelAns!=='auto'?c.levelAns:reasons.length?2:1;
+const split=mixed&&le!==li;
+const level=force!=null?force:mixed?(split?Math.max(le,li):le):c.levelAns!=='auto'?c.levelAns:reasons.length?2:1;
 const prot=hasE&&a.protected!=='no';
 let route=prot?'protected':'standard',kind=null,base,bmin,baseLabel,ilv,elv;
 if(prot){
@@ -310,11 +332,16 @@ kind=pt==='f'?'pfull':level===2||a.outside==='neglect'?'reseal':'refresh';
 base=P.pfPrice(kind,e,i);bmin=P.pfMinutes(kind,e,i);baseLabel=M.protected[kind].label;
 ilv=kind==='pfull'?2:null; 
 elv=null; 
+}else if(split){
+base=P.mixedPrice(le,li,e,i);bmin=P.mixedMinutes(le,li,e,i);baseLabel=`Full — ${mixLabel(le,li)}`;
+ilv=li;elv=le;
 }else{
 base=P.price(pt,level,e,i);bmin=P.minutes(pt,level,e,i);baseLabel=`${TRACK_NAME[pt]} · ${LEVELS[level]}`;
 ilv=elv=level;
 }
 const delta=(to,from)=>P.price(pt,to,e,i)-P.price(pt,from,e,i);
+const dI=(to,from)=>(mixed?P.mixedPrice(elv,to,e,i)-P.mixedPrice(elv,from,e,i):delta(to,from));
+const dE=(to,from)=>(mixed?P.mixedPrice(to,ilv,e,i)-P.mixedPrice(from,ilv,e,i):delta(to,from));
 const add=(key,why,o)=>{
 o=o||{};
 const qty=o.qty||1,lv=o.lv==null?null:o.lv;
@@ -341,8 +368,8 @@ const forcedExtraction=pt==='i'&&a.lived==='year'&&level===2;
 if(forcedExtraction){st='lots';w='both';}
 const cloth=a.seats==='cloth'||a.seats==='unsure';
 if(st==='spots'){
-if(lv===0&&w!=='carpet')note('spots_cp',`Spot treatment starts at Clean & Protect (+${money(delta(1,0))}).`);
-if(lv!==2&&w!=='seats')note('spots_carpet',`Carpet spot treatment is part of Clean, Restore & Protect (+${money(delta(2,lv))}).`);
+if(lv===0&&w!=='carpet')note('spots_cp',`Spot treatment starts at Clean & Protect (+${money(dI(1,0))}).`);
+if(lv!==2&&w!=='seats')note('spots_carpet',`Carpet spot treatment is part of Clean, Restore & Protect (+${money(dI(2,lv))}).`);
 }
 if(st==='lots'){
 const l2=lv===2?2:null;
@@ -352,7 +379,7 @@ if(w==='both'||w==='carpet')add('shampoo_floor',l2?WHY.shampoo_floor_l2:WHY.sham
 if(w==='seats'&&cloth)add('shampoo_seats',WHY.shampoo_seats);
 if(w!=='carpet'&&!cloth){
 if(lv===2)note('leather_included',STRINGS.leatherIncluded);
-else note('leather_crp',`Leather stains come out in the deep-clean at Clean, Restore & Protect (+${money(delta(2,lv))}).`);
+else note('leather_crp',`Leather stains come out in the deep-clean at Clean, Restore & Protect (+${money(dI(2,lv))}).`);
 }
 }
 }
@@ -369,8 +396,8 @@ if(forcedExtraction)note('neglect_photos',STRINGS.neglectPhotos);
 if(a.lived==='heavy')addHeavySoil(lv);
 if(a.lived==='year'){
 if(prot)addHeavySoil(2);
-else if(level<2&&pt==='f'){
-addHeavySoil(level);
+else if(lv<2&&pt==='f'){
+addHeavySoil(lv);
 note('year_resto',`A year or more without cleaning usually needs a Restoration Detail (${money(P.restoration(e,i))}) — I'll confirm from photos.`);
 actions.push({key:'switch_restoration',label:'Switch to Restoration Detail',level:2});
 }else if(level<2&&pt==='i'){
@@ -392,8 +419,8 @@ if(a.outside==='muddy'){
 const mud=`Mud packed solid: +${money(M.modifiers.packed_mud.price)}, confirmed at the walkaround.`;
 add('flush_trail',WHY.flush_trail);note('mud',mud);
 }
-if(a.outside==='neglect'&&!prot&&level<2)
-note('neglect_outside',`Months without a wash usually need the clay treatment in Clean, Restore & Protect (+${money(delta(2,level))}).`);
+if(a.outside==='neglect'&&!prot&&elv<2)
+note('neglect_outside',`Months without a wash usually need the clay treatment in Clean, Restore & Protect (+${money(dE(2,elv))}).`);
 const swap=P.pfPrice('reseal',e,i)-P.pfPrice('refresh',e,i);
 if(a.outside==='neglect'&&kind==='pfull'&&a.water==='none')
 note('pf_neglect',`Months without a wash usually need the full decon: upgrade the outside to Decon & Reseal for +${money(swap)}.`);
@@ -417,7 +444,7 @@ why:STRINGS.trimIncludedLine,level:elv,source:'answer',opt:null,included:true,in
 }
 if(a.trim==='some'){
 if(trimIn)note('trim_included',STRINGS.trimIncluded);
-else if(!prot)note('trim_crp',`Lightly faded trim is revived at Clean, Restore & Protect (+${money(delta(2,level))}).`);
+else if(!prot)note('trim_crp',`Lightly faded trim is revived at Clean, Restore & Protect (+${money(dE(2,elv))}).`);
 }
 const sp=a.special;
 if(has(sp,'chrome_heavy'))addSpecial('chrome_heavy');else if(has(sp,'chrome_light'))addSpecial('chrome_trim');
@@ -528,7 +555,7 @@ else if(wr)wr.text=`${wr.text} ${WHY.coat_prep}`;
 else note('glass_prep',STRINGS.glassPrepWalk);
 }
 let restoReason=null;
-if(pt==='f'&&!prot&&level===2){
+if(pt==='f'&&!prot&&level===2&&!split){
 const rp=P.restoration(e,i);
 const std=base+items.filter(x=>RESTO_COVERED.has(x.key)).reduce((s,x)=>s+x.price,0);
 if(a.lived==='year'||std>=rp){
@@ -540,7 +567,7 @@ note('resto_includes',STRINGS.restoIncludes);
 extras=offerExtras(route); 
 }
 }
-applyAllowances(items,route==='protected'?P.included(2,pt,kind):P.included(level,pt),P,e,i);
+applyAllowances(items,route==='protected'?P.included(2,pt,kind):split?P.mixedIncluded(le,li):P.included(level,pt),P,e,i);
 const subtotal=base+items.reduce((s,x)=>s+x.price,0);
 const adjustments=travelAdj(c);
 if(c.where==='studio'){
@@ -554,13 +581,15 @@ const longMin=M.policy.long_job_minutes,longH=String(Math.round(longMin / 6) / 1
 if(minutes>longMin||route==='restoration')
 note('long_job',c.studio?`More than ${longH} hours of work: I'll book it as a studio day, or split it over two mobile visits if you'd rather.`
 :`More than ${longH} hours of work: I'll split it over two visits on back-to-back days.`);
-const why=lifted&&route==='standard'?lift:whyText(pt,level,explicit,reasons,route,kind,a,restoReason);
-const levelLabel=route==='restoration'?'Restoration Detail':prot?M.protected[kind].label:LEVELS[level];
-return{route,kind,track:c.track,pricingTrack:pt,level,explicit,levelLabel,baseLabel,why,typeLabel:P.types[e].label,
+const why=lifted&&route==='standard'?lift:split?mixWhy(le,li,explicit,reasons):whyText(pt,level,explicit,reasons,route,kind,a,restoReason);
+const levelLabel=route==='restoration'?'Restoration Detail':prot?M.protected[kind].label:split?mixLabel(le,li):LEVELS[level];
+const mix=mixed&&route!=='protected'?{e:le,i:li,split,saving:P.mixedSaving(le,li,e,i)}:null;
+return{route,kind,track:c.track,pricingTrack:pt,level,explicit,levelLabel,baseLabel,why,typeLabel:P.types[e].label,mix,
 base,baseMinutes:bmin,items,subtotal,adjustments,total,minutes,hoursLabel:P.hoursLabel(minutes),
 notes,extras,skipped:c.skipped.slice(),actions,where:c.where,interiorQuoted:c.quotedI,deposit:depositFor(total,M),
-glassPrep:hasE?glassPrep(P,e,i,route==='protected'?null:level):null};
+glassPrep:hasE?glassPrep(P,e,i,route==='protected'?null:elv):null};
 }
+const mixLabel=(le,li)=>`Exterior: ${LEVELS[le]} · Interior: ${LEVELS[li]}`;
 function applyAllowances(items,inc,P,e,i){
 const free=(x,k)=>{
 const n=x.qty||1;
@@ -598,7 +627,7 @@ const level=force!=null?force:c.levelAns!=='auto'?c.levelAns:1;
 return{route:'quoted',kind:null,track:c.track,pricingTrack:null,level,explicit,levelLabel:'Quoted from photos',typeLabel:c.P.types[c.e].label,
 baseLabel:'Interior: quoted from photos',why:STRINGS.quotedInterior,base:0,baseMinutes:0,items:[],subtotal:0,
 adjustments:travelAdj(c),total:0,minutes:0,hoursLabel:'',notes,extras:[],skipped:c.skipped.slice(),actions:[],
-where:c.where,interiorQuoted:true,deposit:depositFor(0,c.M),glassPrep:null};
+where:c.where,interiorQuoted:true,deposit:depositFor(0,c.M),glassPrep:null,mix:null};
 }
 function depositFor(total,M){
 const d=M.policy.deposit;
@@ -613,6 +642,12 @@ crp:{f:'Hand-applied ceramic spray outside (rated 12–18 months), fully restore
 e:'Clay, faded trim restored + hand-applied ceramic spray on paint and wheels (rated 12–18 months).'},
 };
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const LVK=['clean','cp','crp'];
+function mixWhy(le,li,explicit,reasons){
+const side=(L,t)=>cap(WHY_LEVEL[LVK[L]][t]).replace(/ (inside|outside)\.$/,'.');
+void explicit;
+return`${reasons.length?`Recommended because ${reasons.join(' and ')}. `:''}Outside, ${LEVELS[le]}: ${side(le,'e')} Inside, ${LEVELS[li]}: ${side(li,'i')}`;
+}
 function whyText(pt,level,explicit,reasons,route,kind,a,restoReason){
 if(route==='restoration')
 return explicit?`Clean, Restore & Protect becomes a Restoration Detail because ${restoReason}.`:`Recommended because ${restoReason}.`;
@@ -645,12 +680,12 @@ const cheaperText=(hiLabel,loLabel,diff,gain)=>
 function recommend(answers,vehicle,P,cfg){
 const c=context(answers,vehicle,P,cfg);
 let r=run(c,null);
-if(c.levelAns==='auto'&&r.route==='standard'&&r.level===1){
+if(!r.mix&&c.levelAns==='auto'&&r.route==='standard'&&r.level===1){
 const r2=run(c,2);
 if(r2.route!=='protected'&&r2.total<=r.total)
 r=run(c,null,'Recommended: '+cheaperText(LEVELS[2],LEVELS[1],r.total-r2.total,includedGain(r,r2)));
 }
-if(c.levelAns!=='auto'&&r.route==='standard'&&r.level<2){
+if(!r.mix&&c.levelAns!=='auto'&&r.route==='standard'&&r.level<2){
 const ups=[2,1].filter(l=>l>r.level).map(l=>run(c,l)).filter(x=>x.route!=='protected'&&x.total<=r.total);
 const up=ups[0]; 
 if(up){
@@ -663,6 +698,15 @@ r.levels=[0,1,2].map(l=>{
 const x=run(c,l);
 return{level:l,label:x.levelLabel,total:x.total,route:x.route};
 });
+if(r.mix){
+const at=o=>{const x=run(Object.assign({},c,o),null);return x.total;};
+r.mixOptions={
+i:['auto',0,1,2].map(l=>({value:String(l),total:at({levI:l,levE:r.mix.e})})),
+e:['auto',0,1,2].map(l=>({value:String(l),total:at({levE:l,levI:r.mix.i})})),
+};
+r.mixOptions.i[0].level=run(Object.assign({},c,{levI:'auto',levE:r.mix.e}),null).mix.i;
+r.mixOptions.e[0].level=run(Object.assign({},c,{levE:'auto',levI:r.mix.i}),null).mix.e;
+}
 const tn=r.notes.find(n=>n.key==='trim_crp'),l2=r.levels[2];
 if(tn){
 if(l2.route==='standard'&&l2.total>r.total)tn.text=`Lightly faded trim is revived at Clean, Restore & Protect (+${money(l2.total-r.total)} for your answers).`;
@@ -677,11 +721,14 @@ const v=vehicle||{};
 const veh={};
 ['make','model','year','variant','type','itype','freeText'].forEach(k=>{if(v[k]!=null&&v[k]!=='')veh[k]=v[k];});
 const a=answers||{},ans={};
+const mixing=a.mix==='yes'||a.mix===true;
 Object.keys(a).sort().forEach(k=>{
 let x=a[k];
+if((k==='mix'||k==='level_i'||k==='level_e')&&!mixing)return; 
+if(k==='level'&&mixing)return;
 if(x==null||x===''||typeof x==='function')return;
 if(Array.isArray(x))x=x.map(String).sort();
-else if(k==='car_seats'||k==='level')x=String(x);
+else if(k==='car_seats'||k==='level'||k==='level_i'||k==='level_e')x=String(x);
 ans[k]=x;
 });
 return JSON.stringify([veh,ans]);
@@ -756,7 +803,8 @@ const lines=[head,clip(vl,vmax)];
 if(ridersLine)lines.push(ridersLine);
 if(r.route==='quoted')lines.push('Interior: quoted from photos');
 else{
-lines.push(`${r.baseLabel}: ${money(r.base)}`);
+lines.push(r.mix&&r.mix.split?`${r.baseLabel} · ${money(r.base)}`:`${r.baseLabel}: ${money(r.base)}`);
+if(r.mix&&r.route==='standard'&&r.mix.saving>0)lines.push(`Saves ${money(r.mix.saving)} vs booking separately`);
 items.slice(0,shown).forEach(x=>lines.push(`+ ${x.short||x.label}: ${money(x.price)}`));
 const rest=items.slice(shown);
 if(rest.length)lines.push(`+ ${rest.length} more ${rest.length===1?'extra':'extras'}: ${money(rest.reduce((s,x)=>s+x.price,0))}`);
@@ -773,7 +821,8 @@ while(text.length>SMS_MAX&&shown>0)text=build(--shown,vmax);
 if(text.length>SMS_MAX)text=build(0,40);
 return fitSms(text);
 }
-const serviceLabel=r=>(r.route==='quoted'?'Interior quoted from photos':r.route==='standard'?`${TRACK_NAME[r.track]} ${r.levelLabel}`:r.levelLabel);
+const serviceLabel=r=>(r.route==='quoted'?'Interior quoted from photos':r.mix&&r.mix.split?`Full — ${r.levelLabel}`
+:r.route==='standard'?`${TRACK_NAME[r.track]} ${r.levelLabel}`:r.levelLabel);
 const travelOf=r=>(r.adjustments||[]).filter(x=> /^travel_/.test(x.key)).reduce((s,x)=>s+x.amount,0);
 function tripTotals(results,M){
 const rs=results||[],off=M.policy.multi_vehicle.additional_off;
@@ -837,7 +886,8 @@ return{v:2,quoteId:tripId(entries),
 vehicles:entries.map((x,n)=>{
 const r=x.result;
 return{name:x.name||smsName(x.vehicle),typeLabel:(x.vehicle&&x.vehicle.typeLabel)||r.typeLabel,track:r.track,level:r.level,levelLabel:r.levelLabel,route:r.route,
-label:serviceLabel(r),total:T.lines[n].total,discount:T.lines[n].discount,extras:(r.items||[]).length,interiorQuoted:!!r.interiorQuoted};
+label:serviceLabel(r),total:T.lines[n].total,discount:T.lines[n].discount,extras:(r.items||[]).length,interiorQuoted:!!r.interiorQuoted,
+levels:r.mix?{e:r.mix.e,i:r.mix.i,e_label:LEVELS[r.mix.e],i_label:LEVELS[r.mix.i],saving:r.mix.saving}:null};
 }),
 subtotal:T.subtotal,multiDiscount:T.discount,multiPct:T.pct,travel:T.travel,total:T.total,
 deposit:T.deposit.amount,depositPolicy:{share:T.deposit.share,min:T.deposit.min,noticeHours:T.deposit.noticeHours},
@@ -868,7 +918,7 @@ return selectionOf([{result:r,vehicle,answers}],{lines:[{total:t,discount:0}],su
 deposit:r.deposit,pct:0},now);
 }
 const API={recommend,QUESTIONS,LEVELS,summaryText,quoteId,questionsFor,defaultAnswers,applyRiders,selectionFor,
-specialty,STEPS,STRINGS,INTERIOR_KEYS,EXTERIOR_KEYS,HL_LARGE_LENS,
+specialty,mixOffered,STEPS,STRINGS,INTERIOR_KEYS,EXTERIOR_KEYS,HL_LARGE_LENS,
 depositFor,tripTotals,tripText,tripSelection,tripId,serviceLabel,withCards,tripLong};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else window.LumenBuilder=API;
 })();

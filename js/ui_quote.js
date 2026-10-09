@@ -406,6 +406,10 @@ if(row)return keep(()=>pickRow(row,ui.yr));
 keep(paintLists);
 }
 function fsHTML(q,a,deco,srLegend){
+if(q.type==='toggle'){ 
+const on=a[q.key]==='yes';
+return`<div class="q-q q-tog"><label class="q-opt q-togc"><input type="checkbox" name="q-${q.key}" value="yes"${on?' checked':''}${q.help?` aria-describedby="qh-${q.key}"`:''}><span>${esc(q.legend)}</span></label>${q.help?`<p class="q-help" id="qh-${q.key}">${esc(q.help)}</p>`:''}</div>`;
+}
 const multi=q.type==='multi',val=a[q.key],nm='q-'+q.key;
 const on=x=>(multi?(val||[]).map(String).indexOf(String(x))>=0:String(val)===String(x));
 const opts=q.options.map(o=>`<label class="q-opt"><input type="${multi?'checkbox':'radio'}" name="${nm}" value="${esc(o.value)}"${(o.exclusive?!(val||[]).length:on(o.value))?' checked':''}><span>${esc(o.label)}${(deco&&deco[o.value])||''}</span></label>`).join('');
@@ -423,9 +427,15 @@ const r=B.recommend(a,v,P,cfg),ra=a.level==='auto'?r:B.recommend(Object.assign({
 const q=r.route==='quoted',amt=(x,sub)=>` <b class="q-amt">${q?'Quoted':money(x.total)}</b>${sub?`<small>${esc(sub)}</small>`:''}`;
 const rf=B.recommend(Object.assign({},a,{track:'f'}),v,P,cfg),fl=a.level==='auto'?rf.level:+a.level;
 const e=v.type,i=v.itype&&v.itype!=='quote'?v.itype:undefined;
-const sv=v.interiorQuoted?0:rf.route==='protected'?P.pfPrice('refresh',e,i)+P.price('i',2,e,i)-P.pfPrice('pfull',e,i):P.fullSaving(fl,e,i);
+const sv=v.interiorQuoted?0:rf.route==='protected'?P.pfPrice('refresh',e,i)+P.price('i',2,e,i)-P.pfPrice('pfull',e,i)
+:rf.mix?rf.mix.saving:P.fullSaving(fl,e,i);
 deco={track:{f:sv>0?` <span class="save">Saves ${money(sv)}</span>`:''},
 level:{auto:amt(ra,ra.levelLabel),0:amt(r.levels[0]),1:amt(r.levels[1]),2:amt(r.levels[2],r.levels[2].route==='restoration'?'Restoration Detail':'')}};
+if(r.mixOptions)['i','e'].forEach(sd=>{
+const d={};
+r.mixOptions[sd].forEach(o=>{d[o.value]=amt(o,o.value==='auto'?B.LEVELS[o.level]:'');});
+deco['level_'+sd]=d;
+});
 }
 const tq=q=>(q.key==='where'&&st.trip.length?Object.assign({},q,{help:q.help+' Applies to the whole trip — one travel fee per visit.'}):q);
 return h+qs.map(q=>fsHTML(tq(q),a,deco[q.key],q.legend===s.heading)).join('');
@@ -433,7 +443,11 @@ return h+qs.map(q=>fsHTML(tq(q),a,deco[q.key],q.legend===s.heading)).join('');
 function onQ(t){
 const k=t.name.slice(2),a=st.answers,q=B.QUESTIONS.find(x=>x.key===k);
 if(!q)return;
-if(q.type==='multi'){
+if(q.type==='toggle'){
+a[k]=t.checked?'yes':'no';
+if(k==='mix'&&t.checked)a.level_i=a.level_e=a.level==null?'auto':String(a.level);
+if(k==='mix'&&!t.checked&&a.level_i===a.level_e&&a.level_i!=null)a.level=String(a.level_i);
+}else if(q.type==='multi'){
 const vals=$$(`input[name="${t.name}"]:checked`,root).map(x=>x.value);
 a[k]=k==='acc'&&t.value==='none'?[]:vals.filter(x=>x!=='none');
 }else a[k]=q.type==='count'?+t.value:t.value;
@@ -444,7 +458,7 @@ function stepR(){
 return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-lines"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
 }
 const line=(l,w,amt,cls)=>`<div class="q-line${cls?' '+cls:''}"><p><span>${esc(l)}</span>${w?`<small>${esc(w)}</small>`:''}</p><b>${amt}</b></div>`;
-function serviceLabel(r){return r.route==='quoted'?'Interior quoted from photos':r.route==='standard'?`${TW[r.track]} ${r.levelLabel}`:r.levelLabel;}
+const serviceLabel=r=>B.serviceLabel(r); 
 function xHTML(x,gdesc){
 if(x.options){
 const sel=x.selected||x.options[0].key;
@@ -460,11 +474,20 @@ if(!$('#q-lines',root))return;
 $('#q-rv',root).innerHTML=`${esc(vShort(v))} · <button type="button" class="link-btn" data-act="change">Change</button>`;
 const quoted=r.route==='quoted';
 const autoL=a.level==='auto'?r.level:B.recommend(Object.assign({},a,{level:'auto'}),v,P,cfg).level;
-$('#q-seg',root).innerHTML=quoted||r.route==='protected'?'':`<fieldset class="seg q-seg"><legend class="sr-only">Level</legend>${r.levels.map(l=>`<label class="seg-opt"><input type="radio" name="q-rlevel" value="${l.level}"${l.level===r.level?' checked':''}><span class="q-sl">${esc(l.label)}</span> <b>${money(l.total)}</b>${l.level===autoL?'<span class="q-rec">Recommended</span>':''}</label>`).join('')}</fieldset>`;
+const mixSeg=sd=>{
+const o=r.mixOptions[sd],cur=r.mix[sd],rec=o[0].level;
+const nm=sd==='i'?'Inside':'Outside';
+return`<p class="q-segl" aria-hidden="true">${nm}</p><fieldset class="seg q-seg q-seg-mix"><legend class="sr-only">${nm} level</legend>${o.slice(1).map(x=>`<label class="seg-opt"><input type="radio" name="q-rlevel-${sd}" value="${x.value}"${+x.value===cur?' checked':''}><span class="q-sl">${esc(B.LEVELS[+x.value])}</span> <b>${money(x.total)}</b>${+x.value===rec?'<span class="q-rec">Recommended</span>':''}</label>`).join('')}</fieldset>`;
+};
+$('#q-seg',root).innerHTML=quoted||r.route==='protected'?'':r.mix&&r.mixOptions
+?`<div class="q-mixs">${mixSeg('i')}${mixSeg('e')}<p class="q-mixu"><button type="button" class="link-btn" data-act="unmix">Use one level inside and out</button></p></div>`
+:`<fieldset class="seg q-seg"><legend class="sr-only">Level</legend>${r.levels.map(l=>`<label class="seg-opt"><input type="radio" name="q-rlevel" value="${l.level}"${l.level===r.level?' checked':''}><span class="q-sl">${esc(l.label)}</span> <b>${money(l.total)}</b>${l.level===autoL?'<span class="q-rec">Recommended</span>':''}</label>`).join('')}</fieldset>`+
+(r.route==='standard'&&r.track==='f'&&!r.interiorQuoted&&B.mixOffered(v,a)?`<p class="q-mixu"><button type="button" class="link-btn" data-act="mix">Mix levels inside and out</button></p>`:'');
 let L='';
 const smoke=r.notes.find(n=>n.key==='smoke');
 if(smoke)L+=`<p class="q-banner" role="note">${esc(smoke.text)}</p>`;
 L+=line(r.baseLabel,quoted?QIW:r.why,quoted?'Quoted':money(r.base),'q-main');
+if(r.mix&&r.route==='standard'&&r.mix.saving>0)L+=`<p class="q-msave"><span class="save">Saves ${money(r.mix.saving)} vs booking separately</span></p>`;
 if(!quoted){
 r.items.forEach(x=>{L+=line(x.label,x.why,x.included?'Included':money(x.price),x.included?'q-inc':'');});
 if(r.interiorQuoted)L+=line(QI,QIW,'Quoted');
@@ -698,6 +721,7 @@ keep(()=>useVehicle(v,'b'));
 else if(n==='q-type')keep(()=>useVehicle(manualV(t.value,ui.free.trim()),'b'));
 else if(n==='q-free'){ui.free=t.value;if(st.vehicle&&st.vehicle.manual)keep(()=>useVehicle(manualV(st.vehicle.type,ui.free.trim()),'b'));}
 else if(n==='q-rlevel'){a.level=t.value;save();keep(paintR);syncing=true;LS.setLevel(a.track,+t.value);syncing=false;}
+else if(n==='q-rlevel-i'||n==='q-rlevel-e'){a['level_'+n.slice(-1)]=t.value;save();keep(paintR);}
 else if(n==='qx'||n==='qx-sh'){
 const sh=x=> /^shampoo_/.test(x);
 if(n==='qx-sh')a.extras=a.extras.filter(x=>!sh(x)).concat(t.value);
@@ -753,7 +777,7 @@ D.addEventListener('lumen:level',e=>{
 const d=e.detail;
 if(syncing||st.step!==6||!d||!st.vehicle||d.track!==st.answers.track)return;
 const r=B.recommend(st.answers,st.vehicle,P,cfg);
-if(r.route==='protected'||r.route==='quoted'||r.level===d.level)return;
+if(r.route==='protected'||r.route==='quoted'||r.mix||r.level===d.level)return; 
 st.answers.level=String(d.level);save();keep(paintR);
 });
 Object.assign(API,{
@@ -777,7 +801,14 @@ else if(k==='back')back();
 else if(k==='skip-e'||k==='skip-i'){st.answers.track=k.slice(5);save();go(k==='skip-e'?3:5,true);}
 else if(k==='change')toStep1();
 else if(k==='reset')reset();
-else if(k==='lvl'){st.answers.level=String(+a.dataset.level);save();paintR();const x=$('input[name="q-rlevel"]:checked',root);if(x)x.focus();}
+else if(k==='lvl'){st.answers.level=String(+a.dataset.level);st.answers.mix='no';save();paintR();const x=$('input[name="q-rlevel"]:checked',root);if(x)x.focus();}
+else if(k==='mix'||k==='unmix'){ 
+const an=st.answers,r0=B.recommend(an,st.vehicle,P,cfg);
+if(k==='mix'){an.mix='yes';an.level_i=an.level_e=an.level==='auto'?'auto':String(r0.level);}
+else{an.mix='no';an.level=r0.mix&&!r0.mix.split?String(r0.mix.e):String(r0.level);}
+save();paintR();
+const x=$(k==='mix'?'input[name="q-rlevel-i"]:checked':'input[name="q-rlevel"]:checked',root);if(x)x.focus();
+}
 else if(k==='addveh')addVehicle();
 else if(k==='trip-rm')tripRemove(+a.dataset.n);
 else if(k==='trip-edit')tripEdit(+a.dataset.n);

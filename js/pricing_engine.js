@@ -110,6 +110,16 @@ return a[freq]+round10(d);
 const planSavePct=(name,freq,e,i)=>{const one=planOneOff(name,freq,e||'sedan',i);return Math.floor(100*(one-plan(name,freq,e||'sedan',i)) / one);};
 const fullSaving=(level,e,i)=>price('e',level,e)+price('i',level,e,i)-price('f',level,e,i);
 const maxSaving=(e,i)=>Math.max(fullSaving(0,e,i),fullSaving(1,e,i),fullSaving(2,e,i));
+const mixedPrice=(le,li,e,i)=>price('e',le,e)+price('i',li,e,i)-fullSaving(Math.min(le,li),e,i);
+const mixedSaving=(le,li,e,i)=>fullSaving(Math.min(le,li),e,i);
+const mixedMinutes=(le,li,e,i)=>{
+i=i||e;
+if(T(e).interior_only)throw new Error(e+' is interior-only');
+const lo=Math.min(le,li);
+return sum(EXT,le,T(e))+sum(INT,li,T(i))-OV.min[lo]*T(e)[OV.factor]+always('f',lo)[0];
+};
+const mixedIncluded=(le,li)=>{const x=included(le,'e'),y=included(li,'i');
+return{car_seat:y.car_seat,gear:x.gear,trim_restore:x.trim_restore,ws_ceramic:x.ws_ceramic||y.ws_ceramic,glass_spots:x.glass_spots};};
 const hoursLabel=m=>{const h=Math.max(1,Math.floor(m / 30+0.5) / 2);return h===1?'about 1 hour':`about ${h} hours`;};
 const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 (function selfCheck(){
@@ -125,8 +135,13 @@ if(n==='std'&&!(one-p>=M.plans.std.save_pct[f]*one-1e-9))console.warn('Lumen pri
 if(!(planSavePct('std','bw')>=planSavePct('std','m')&&planSavePct('std','m')>=planSavePct('std','b2')&&planSavePct('std','b2')>0))
 console.warn('Lumen pricing: Standard Care saving does not grow with frequency');
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
+if(mixedPrice(2,0,'sedan')!==239||mixedPrice(2,1,'sedan')!==259)console.warn('Lumen pricing: sedan mixed levels are not 239/259');
+for(const k of publicTypes())for(let a=0;a<3;a++)for(let b=0;b<3;b++){
+const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,b),k);
+if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
+}
 })();
 return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,plan,planOneOff,planSavePct,
-fullSaving,maxSaving,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
+fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};
