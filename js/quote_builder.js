@@ -29,7 +29,7 @@ heavy_soil:'Heavy soil, interior',water_light:'Water spots, light',water_heavy:'
 engine_bay:'Engine bay',ws_ceramic:'Windshield ceramic coating',all_glass_ceramic:'All-glass ceramic coating',
 ws_polish:'Windshield polish',glass_polish:'All-glass polish',headliner:'Headliner cleaning',flush_salt:'Winter Salt Flush',flush_trail:'Trail Flush',
 accessory:'Accessory care',restore_box:'Faded roof box restored',restore_cap:'Faded truck cap restored',truck_bed:'Truck bed',
-hl_polish:'Headlight Polish (bundled)',hl_restore:'Headlight Restore (bundled)',fog:'Fog lights',tail:'Tail lights',
+hl_polish:'Headlight Polish (bundled)',hl_restore:'Headlight Restore (bundled)',fog:'Fog lights',tail:'Tail lights',emblem:'Emblem & badge polish',
 lightbar:'Light bar / pods',lifted:'Lifted or oversized tires',dually:'Dually',
 };
 const WHY={
@@ -40,6 +40,7 @@ odor_smoke:'Ozone treatment after the clean, for smoke odor.',
 alcantara:'Dedicated low-moisture cleaner; nap brushed back up by hand.',
 chrome_trim:'Hand-polished with a chrome-safe metal polish, then sealed so water spots wipe off.',
 chrome_heavy:'Chrome-safe metal polish by hand, then sealed. Window trim and emblems included.',
+emblem:'Faded or cloudy chrome and plastic emblems hand-polished and protected — front and rear badges.',
 soft_top:'Dedicated soft-top cleaner and a soft brush at low pressure — never a pressure washer.',
 carbon:'pH-neutral clean, then a protectant made for clear-coated carbon — no polish or abrasives.',
 shampoo_full:'Shampoo & extraction of seats, carpets and mats.',
@@ -107,7 +108,7 @@ opt('none','None'),opt('light','Light rings'),opt('heavy','Baked-on — sprinkle
 opt('no','No / not sure'),opt('ceramic','Ceramic coating'),opt('ppf','Paint protection film (PPF)'),opt('wrap','Wrap or matte paint')]},
 {key:'trim',step:'outside',type:'single',legend:'Black plastic trim',options:[opt('no','Looks fine'),opt('some','A little gray'),opt('heavy','Very faded or chalky')]},
 {key:'special',step:'outside',type:'multi',legend:'Anything special about the car?',
-help:'Same price at every level. Small pieces — a few chrome emblems or a carbon mirror cap — are included, so leave those unticked.',
+help:'Same price at every level. Small pieces like a carbon mirror cap are included, so leave those unticked. Only the emblems faded? Add Emblem & badge polish under Add an extra.',
 options:[opt('chrome_light','Chrome trim — window trim & emblems'),opt('chrome_heavy','Lots of chrome — grille, bumpers, running boards'),
 opt('soft_top','Convertible soft top',{softTop:true}),opt('carbon','Exposed carbon fiber'),
 opt('single_stage','Classic or single-stage paint'),opt('unsure','Not sure — check at the walkaround')]},
@@ -150,6 +151,7 @@ suede:'Genuine suede, nubuck or aniline leather: quoted after a test spot — wa
 singleStage:'Classic or single-stage paint: quoted after a test spot — I check how the paint reacts before any polish or protection goes on.',
 specialUnsure:"I'll check for specialty surfaces at the walkaround and tell you before starting.",
 chromeIncluded:'Included in heavy chrome polish',
+emblemIncluded:'Included in chrome trim polish',
 glassTitle:'Glass ceramic coating',
 glassIncluded:'Included in all-glass ceramic coating',
 glassPrepWalk:"Glass coating prep: coatings bond to clean, smooth glass and seal in whatever is on it. I check for water spots and wiper haze at the walkaround and quote any removal before starting.",
@@ -526,6 +528,8 @@ out.push(Object.assign({key,label:(g||M.addons[key]).label,price:g?P.glassWheels
 enabled:true,reason:null,checked:has(chosen,key),group:'specialty'},extra||{}));
 };
 const heavyX=!heavyAns&&has(chosen,'chrome_heavy');
+const chromeX=heavyX||(!heavyAns&&!lightAns&&has(chosen,'chrome_trim'));
+if(!heavyAns&&!lightAns)offer('emblem',chromeX?{enabled:false,checked:false,reason:STRINGS.emblemIncluded}:null);
 if(!heavyAns&&!lightAns)offer('chrome_trim',heavyX?{enabled:false,checked:false,reason:STRINGS.chromeIncluded}:null);
 if(!heavyAns)offer('chrome_heavy');
 if(c.sp.softTopOffered&&!has(sp,'soft_top'))offer('soft_top');
