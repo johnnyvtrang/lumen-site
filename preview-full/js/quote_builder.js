@@ -131,7 +131,7 @@ opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('
 opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('2','Clean, Restore & Protect')]},
 {key:'level_e',step:'service',type:'single',legend:'Outside',options:[
 opt('auto','Recommend for me'),opt('0','Clean'),opt('1','Clean & Protect'),opt('2','Clean, Restore & Protect')]},
-{key:'where',step:'service',type:'single',legend:'Where should I do it?',help:'Not sure of your zone? See <a href="#area">Service area</a>.',options:[
+{key:'where',step:'service',type:'single',legend:'Where should I do it?',help:'Not sure of your zone? See <a href="#area">Service area</a>. Prefer drop-off? Choose mobile and mention it when you text — no travel fee.',options:[
 opt('core','Mobile — core valley (no travel fee)'),opt('ext','Mobile — Extended zone',{fee:'ext'}),
 opt('reg','Mobile — Regional zone',{fee:'reg'}),opt('studio','Studio drop-off',{pct:'studio_discount',studioOnly:true})]},
 ];
