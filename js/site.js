@@ -98,7 +98,7 @@ if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c
 }
 };
 const TRACK={i:'Interior',e:'Exterior',f:'Full'};
-const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVEL_FULL)||['Refresh (Clean)','Reflect (Clean & Protect)','Radiance (Clean, Restore & Protect)'])[l];
+const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVEL_FULL)||['Refresh','Renew','Radiance'])[l];
 const typeLabel=V=>(V.v&&V.v.typeLabel)||P.types[V.e].label;
 const fill=(a,fn)=>$$('[data-'+a+']').forEach(el=>{
 try{
@@ -113,7 +113,7 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Reflect (Clean & Protect) one at a time ('+avg+').';
+if(k==='pf')return lead+'a Refresh Wash + Interior Renew one at a time ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
 }
 function planSave(el,k,f,V){

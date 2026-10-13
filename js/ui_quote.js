@@ -477,11 +477,11 @@ const autoL=a.level==='auto'?r.level:B.recommend(Object.assign({},a,{level:'auto
 const mixSeg=sd=>{
 const o=r.mixOptions[sd],cur=r.mix[sd],rec=o[0].level;
 const nm=sd==='i'?'Inside':'Outside';
-return`<p class="q-segl" aria-hidden="true">${nm}</p><fieldset class="seg q-seg q-seg-mix"><legend class="sr-only">${nm} level</legend>${o.slice(1).map(x=>`<label class="seg-opt"><input type="radio" name="q-rlevel-${sd}" value="${x.value}"${+x.value===cur?' checked':''}><span class="q-sl">${esc(B.LEVELS[+x.value])}</span> <b>${money(x.total)}</b>${+x.value===rec?'<span class="q-rec">Recommended</span>':''}</label>`).join('')}</fieldset>`;
+return`<p class="q-segl" aria-hidden="true">${nm}</p><fieldset class="seg q-seg q-seg-mix"><legend class="sr-only">${nm} level</legend>${o.slice(1).map(x=>`<label class="seg-opt"><input type="radio" name="q-rlevel-${sd}" value="${x.value}"${+x.value===cur?' checked':''}><span class="q-sl">${esc(B.LEVELS[+x.value])}</span> <b>${money(x.total)}</b>${+x.value===rec?'<span class="q-rec">Suggested</span>':''}</label>`).join('')}</fieldset>`;
 };
 $('#q-seg',root).innerHTML=quoted||r.route==='protected'?'':r.mix&&r.mixOptions
 ?`<div class="q-mixs">${mixSeg('i')}${mixSeg('e')}<p class="q-mixu"><button type="button" class="link-btn" data-act="unmix">Use one level inside and out</button></p></div>`
-:`<fieldset class="seg q-seg"><legend class="sr-only">Level</legend>${r.levels.map(l=>`<label class="seg-opt"><input type="radio" name="q-rlevel" value="${l.level}"${l.level===r.level?' checked':''}><span class="q-sl">${esc(l.label)}</span> <b>${money(l.total)}</b>${l.level===autoL?'<span class="q-rec">Recommended</span>':''}</label>`).join('')}</fieldset>`+
+:`<fieldset class="seg q-seg"><legend class="sr-only">Level</legend>${r.levels.map(l=>`<label class="seg-opt"><input type="radio" name="q-rlevel" value="${l.level}"${l.level===r.level?' checked':''}><span class="q-sl">${esc(l.label)}</span> <b>${money(l.total)}</b>${l.level===autoL?'<span class="q-rec">Suggested</span>':''}</label>`).join('')}</fieldset>`+
 (r.route==='standard'&&r.track==='f'&&!r.interiorQuoted&&B.mixOffered(v,a)?`<p class="q-mixu"><button type="button" class="link-btn" data-act="mix">Mix levels inside and out</button></p>`:'');
 let L='';
 const smoke=r.notes.find(n=>n.key==='smoke');
@@ -807,10 +807,10 @@ return h;
 }).join('');
 const lvls=gloss?['rplus','essential','signature','reserve']:['film'];
 const lvPrice=k=>(k==='rplus'?P.price('e',2,e)+P.addon('radiance_plus_e',e).price:P.coating(k,e));
-const lvName=k=>(k==='rplus'?'Radiance+':M.coatings.tiers[k].label.replace(/ coating$/,''));
-const rec='<span class="q-rec">Johnny recommends</span>';
+const lvName=k=>(k==='rplus'?'Halo':M.coatings.tiers[k].label.replace(/ coating$/,''));
+const rec='<span class="q-rec">Likely fit</span>';
 const seg=(name,legend,list,cur,recK,price,label)=>`<p class="q-segl">${esc(legend)}</p><fieldset class="seg q-seg ca-seg"><legend class="sr-only">${esc(legend)}</legend>${list.map(k=>`<label class="seg-opt"><input type="radio" name="${name}" value="${k}"${k===cur?' checked':''}><span class="q-sl">${esc(label(k))}</span> <b>${price(k)}</b>${k===recK?rec:''}</label>`).join('')}</fieldset>`;
-let out=`<p class="label">My recommendation</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Radiance+ — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`;
+let out=`<p class="label">A likely fit — confirmed at your free inspection</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Halo — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`;
 out+=`<ul class="ca-why">${plan.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`;
 if(lvls.length>1)out+=seg('ca-level','Coating',lvls,plan.level,plan.rec,k=>money(lvPrice(k)),lvName);
 if(gloss){
@@ -821,7 +821,7 @@ k=>(k==='none'?'':'from '+money(P.correction(k,e))),k=>(k==='none'?'None':M.corr
 const harsh=ca.use.some(x=>x==='salt'||x==='offroad'||x==='work');
 if(harsh){
 const fk=ca.use.indexOf('offroad')>=0||ca.use.indexOf('work')>=0?'flush_trail':'flush_salt';
-out+=`<fieldset class="q-q ca-harsh"><legend>Recommended for how you drive</legend><div class="q-opts">`+
+out+=`<fieldset class="q-q ca-harsh"><legend>Worth adding for how you drive</legend><div class="q-opts">`+
 `<label class="q-opt"><input type="checkbox" name="ca-sw" value="faces"${ca.wheels!=='none'?' checked':''}><span>Coat the wheel faces <b class="q-amt">${money(P.addon('wheel_ml',e).price)}</b></span></label>`+
 `<label class="q-opt"><input type="checkbox" name="ca-flush" value="yes"${ca.flush==='yes'?' checked':''}><span>${esc(fk==='flush_trail'?'Trail Flush':'Winter Salt Flush')} (undercarriage) <b class="q-amt">${money(P.addon(fk,e).price)}</b></span></label></div></fieldset>`;
 }
@@ -841,7 +841,7 @@ if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you 
 const text=B.coatingText(plan,v?vText(v):null),fine=mq('(pointer:fine)');
 const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Johnny</a>`
 :`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Johnny</a>`;
-out+=`<div class="q-acts">${send}<button type="button" class="btn btn-ghost" data-ca="copy">Copy my plan</button>${plan.level==='rplus'?'<button type="button" class="btn btn-ghost" data-ca="builder">Price Radiance+ in the detail builder</button>':''}<button type="button" class="link-btn" data-ca="reset">Start over</button></div><div id="ca-cp"></div>`;
+out+=`<div class="q-acts">${send}<button type="button" class="btn btn-ghost" data-ca="copy">Copy my plan</button>${plan.level==='rplus'?'<button type="button" class="btn btn-ghost" data-ca="builder">Price Halo in the detail builder</button>':''}<button type="button" class="link-btn" data-ca="reset">Start over</button></div><div id="ca-cp"></div>`;
 keep2(()=>{
 $('#ca-chip-l',adv).textContent=v?vShort(v):'a sedan';
 $('#ca-qs',adv).innerHTML=qs;
@@ -965,7 +965,7 @@ if(adv&&ca){
 adv.classList.add('q-on','ca-on');
 adv.setAttribute('role','region');
 adv.setAttribute('aria-labelledby','ca-title');
-adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then my recommendation and a live estimate. Change any choice — I recommend, you decide.</p></div>`+
+adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then a likely fit and a live estimate. Change any choice; I confirm the plan with you at a free inspection.</p></div>`+
 `<div class="veh-chip ca-chip"><span>Prices for: <b id="ca-chip-l">a sedan</b></span> <button type="button" class="link-btn" data-ca-change>Change</button><div class="veh-picker" id="ca-pk" hidden></div></div>`+
 `<div class="ca-grid"><div class="ca-qs" id="ca-qs"></div><div class="ca-out" id="ca-out" aria-live="polite"></div></div>`;
 adv.addEventListener('change',caChange);
