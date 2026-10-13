@@ -90,7 +90,8 @@ const m=LVL.exec(k);
 if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
 if(k==='resto')return mins?P.restorationMinutes(V.e,V.i):P.restoration(V.e,V.i);
-if(!mins&&(k==='enh'||k==='corr'))return P.correction(k,V.e);
+if(!mins&& /^g[123]$/.test(k)&&M.correction[k])return P.correction(k,V.e); 
+if(!mins&&k==='care:prepay2'&&P.carePrepay)return P.carePrepay(V.e); 
 if(!mins&&P.coating){ 
 const c= /^coat(_parts|_save)?:([a-z0-9_]+)$/.exec(k);
 if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c[1]==='_save'?P.coatingSaving:P.coating)(c[2],V.e);
@@ -378,8 +379,9 @@ route='plan';back='plans';
 lab=txt(el.closest('.card')&&el.closest('.card').querySelector('h3'))+' · '+txt(r&&r.closest('label'));
 priceText=V.q?'quoted from photos':money(P.plan(pk,S.freq,V.e,V.i))+' / visit';
 }
-else if(key==='correction'){ 
-route='correction';back='correct';lab='Paint correction';priceText='from '+money(calc('enh',V));
+else if(/^correction(_g[123])?$/.test(key)){ 
+const g=key.slice(11)||'g1';
+route='correction';back='correct';lab='Paint correction '+M.correction[g].short;priceText='from '+money(calc(g,V));
 }
 else return warn('unknown data-book "'+key+'"');
 if(k&&!(V.q&&INSIDE.test(k))){price=calc(k,V);minutes=calc(k,V,1);}

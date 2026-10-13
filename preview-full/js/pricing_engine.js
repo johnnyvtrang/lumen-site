@@ -99,17 +99,19 @@ return{price:Math.max(c.min_usd,round5(RATE*m)),minutes:m};
 const restoration=(e,i)=>round9(price('f',2,e,i)+addon('shampoo_full',e,i).price);
 const restorationMinutes=(e,i)=>minutes('f',2,e,i)+addon('shampoo_full',e,i).minutes+M.specialty.restoration.extra_min;
 const correction=(kind,e)=>round9(M.correction[kind].anchor*(0.1+0.9*T(e).paint));
-const COAT=(M.coatings&&M.coatings.tiers)||{}; 
+const COAT=(M.coatings&&M.coatings.tiers)||{},CARE=(M.coatings&&M.coatings.care)||{};
+const coatRound=d=>(d.rounding==='nearest_10'?round10:round9);
 function coating(kind,e){
 const d=COAT[kind];if(!d)throw new Error('Unknown coating tier '+kind);
-if(d.parts)return round9(coatingParts(kind,e)*d.anchor / coatingParts(kind,'sedan'));
-if(d.plus==='correction_stepup')return coating(d.base,e)+correction('corr',e)-correction('enh',e);
-return round9(d.anchor*(0.1+0.9*T(e).paint));
+if(d.parts)return coatRound(d)(coatingParts(kind,e)*(1-d.discount));
+return coatRound(d)(d.anchor*(0.1+0.9*T(e).paint));
 }
 const part=(ref,e)=>{const n=ref.indexOf(':'),kind=ref.slice(0,n),key=ref.slice(n+1);
 if(kind==='coat')return coating(key,e);if(kind==='addon')return addon(key,e).price;if(kind==='gw')return glassWheels(key,e);throw new Error('Unknown part '+ref);};
 const coatingParts=(kind,e)=>(COAT[kind].parts||[]).reduce((s,r)=>s+part(r,e),0);
 const coatingSaving=(kind,e)=>coatingParts(kind,e)-coating(kind,e);
+const carePrepay=e=>{const c=CARE.prepay2;return round9(c.services*pfPrice(c.of.replace(/^pf_/,''),e)*(1-c.off));};
+const CORR_KEYS=Object.keys(M.correction).filter(k=>M.correction[k]&&typeof M.correction[k]==='object'); 
 const cycle=(e,i)=>(2*price('f',0,e,i)+price('f',1,e,i)) / 3;
 const planOneOff=(name,freq,e,i)=>name==='std'?(freq==='q'?price('f',1,e,i):cycle(e,i)):pfPrice('refresh',e)+price('i',1,e,i);
 const roundDown59=x=>{const t=Math.floor(x),last=t%10;return last>=9?t-(last-9):last>=5?t-(last-5):t-last-1;};
@@ -147,14 +149,16 @@ if(n==='std'&&!(one-p>=M.plans.std.save_pct[f]*one-1e-9))console.warn('Lumen pri
 if(!(planSavePct('std','bw')>=planSavePct('std','m')&&planSavePct('std','m')>=planSavePct('std','b2')&&planSavePct('std','b2')>0))
 console.warn('Lumen pricing: Standard Care saving does not grow with frequency');
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
-for(const k in COAT)if(!COAT[k].parts&&!COAT[k].plus&&coating(k,'sedan')!==COAT[k].anchor)console.warn('Lumen pricing: coating tier sedan mismatch',k);
+for(const k in COAT)if(!COAT[k].parts&&coating(k,'sedan')!==COAT[k].anchor)console.warn('Lumen pricing: coating tier sedan mismatch',k);
+if(CORR_KEYS.map(k=>correction(k,'sedan')).join()!=='399,549,699')console.warn('Lumen pricing: correction grades are not 399/549/699');
+if(CARE.prepay2&&carePrepay('sedan')!==349)console.warn('Lumen pricing: Coating Care prepay is not $349 on a sedan');
 if(mixedPrice(2,0,'sedan')!==239||mixedPrice(2,1,'sedan')!==259)console.warn('Lumen pricing: sedan mixed levels are not 239/259');
 for(const k of publicTypes())for(let a=0;a<3;a++)for(let b=0;b<3;b++){
 const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,b),k);
 if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
 }
 })();
-return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,coating,coatingParts,coatingSaving,plan,planOneOff,planSavePct,
+return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};
