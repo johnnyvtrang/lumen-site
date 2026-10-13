@@ -91,9 +91,13 @@ if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
 if(k==='resto')return mins?P.restorationMinutes(V.e,V.i):P.restoration(V.e,V.i);
 if(!mins&&(k==='enh'||k==='corr'))return P.correction(k,V.e);
+if(!mins&&P.coating){ 
+const c= /^coat(_parts|_save)?:([a-z0-9_]+)$/.exec(k);
+if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c[1]==='_save'?P.coatingSaving:P.coating)(c[2],V.e);
+}
 };
 const TRACK={i:'Interior',e:'Exterior',f:'Full'};
-const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVELS)||['Clean','Clean & Protect','Clean, Restore & Protect'])[l];
+const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVEL_FULL)||['Refresh (Clean)','Reflect (Clean & Protect)','Radiance (Clean, Restore & Protect)'])[l];
 const typeLabel=V=>(V.v&&V.v.typeLabel)||P.types[V.e].label;
 const fill=(a,fn)=>$$('[data-'+a+']').forEach(el=>{
 try{
@@ -108,7 +112,7 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Clean & Protect one at a time ('+avg+').';
+if(k==='pf')return lead+'a Refresh Wash + Interior Reflect (Clean & Protect) one at a time ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
 }
 function planSave(el,k,f,V){
@@ -371,7 +375,7 @@ machine=txt(card&&card.querySelector('.lvl-track'));priceText=m?null:pt;back='po
 else if(/^plan_(std|pf)$/.test(key)){ 
 const pk=key.slice(5),r=$$('[data-seg="freq"] input[name="freq"]').find(x=>x.value===S.freq);
 route='plan';back='plans';
-lab=txt(el.closest('.card')&&el.closest('.card').querySelector('h3'))+' plan · '+txt(r&&r.closest('label')).toLowerCase();
+lab=txt(el.closest('.card')&&el.closest('.card').querySelector('h3'))+' · '+txt(r&&r.closest('label'));
 priceText=V.q?'quoted from photos':money(P.plan(pk,S.freq,V.e,V.i))+' / visit';
 }
 else if(key==='correction'){ 

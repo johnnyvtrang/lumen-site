@@ -502,9 +502,11 @@ const ex=$('#q-ex',root);
 ex.hidden=!r.extras.length;
 $('summary',ex).textContent=`Add an extra (${r.extras.length})`;
 const gx=r.extras.filter(x=>!x.group),lx=r.extras.filter(x=>x.group==='glass'),sx=r.extras.filter(x=>x.group==='specialty');
+const ux=r.extras.filter(x=>x.group==='surface'); 
 const grp=(title,sub,id,items,sr)=>`<fieldset class="q-xgf"><legend class="q-xg${sr?' sr-only':''}">${esc(title)}</legend>${sub?`<p class="q-xgp"${id?` id="${id}"`:''}>${esc(sub)}</p>`:''}${items}</fieldset>`;
 $('.q-xl',ex).innerHTML=(gx.length?grp('Extras','','',gx.map(x=>xHTML(x)).join(''),true):'')+
 (lx.length?grp(B.STRINGS.glassTitle,r.glassPrep||'','q-glass-prep',lx.map(x=>xHTML(x,r.glassPrep?'q-glass-prep':'')).join('')):'')+
+(ux.length?grp('Wheels, trim & tires','Quick protection, or a multi-year coating','',ux.map(x=>xHTML(x)).join('')):'')+
 (sx.length?grp('Specialty surfaces','Same price at every level','',sx.map(x=>xHTML(x)).join('')):'');
 const trip=st.trip.length>0,q=current();
 $('#q-totl',root).textContent=quoted?'Estimate':(trip?'This vehicle':'Estimated total')+(r.interiorQuoted?' (exterior)':'');

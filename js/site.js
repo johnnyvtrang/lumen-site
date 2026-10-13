@@ -17,9 +17,16 @@ const mine=el=>!el.closest('#quote,[data-veh-picker]');
 const txt=el=>(el?el.textContent.replace(/\s+/g,' ').trim():'');
 const byId=id=>d.getElementById(id);
 const hide=(el,h)=>{el.hidden=h;if(el.style.display||(h&&getComputedStyle(el).display!=='none'))el.style.display=h?'none':'';};
+const ROOT=C.root||d.documentElement.getAttribute('data-root')||'';
+const go=path=>{location.href=ROOT+path;};
+const PAGE={quote:'quote/#quote',book:'quote/#book',powersports:'powersports/',plans:'care-plans/#plans',
+correct:'paint-correction-ceramic-coating/#correct',compare:'detailing/#compare'};
 let M=null,P=null;
-try{M=JSON.parse(byId('lumen-pricing').textContent);P=w.makePricing(M);}
+const pj=byId('lumen-pricing'); 
+if(pj){
+try{M=JSON.parse(pj.textContent);P=w.makePricing(M);}
 catch(e){M=P=null;warn('no pricing model, the static sedan prices stay',e);}
+}
 let month=new Date().getMonth()+1;
 const qm=C.PREVIEW&&parseInt(new URLSearchParams(location.search).get('qa_month'),10);
 if(qm>=1&&qm<=12)month=qm;
@@ -31,9 +38,32 @@ const depAmt=x=>(x==null?null:typeof x==='number'?x:typeof x.amount==='number'?x
 const dflt=(n,f)=>($$('[data-seg] input[name="'+n+'"]').find(x=>x.defaultChecked)||{value:f}).value;
 let S=w.LumenState;
 if(!S||typeof S!=='object'){
-S=w.LumenState={vehicle:null,track:'f',level:1,
+S=w.LumenState={vehicle:savedVehicle(),track:'f',level:1,
 setVehicle(v){S.vehicle=v||null;fire('lumen:vehicle',S.vehicle);},
 setLevel(t,l){S.track=t;S.level=l;fire('lumen:level',{track:t,level:l});}};
+}
+function savedVehicle(){
+const s=store('lumen_quote_v2'),v=s&&s.v===2&&Date.now()-(s.savedAt||0)<2592e6&&s.vehicle;
+if(!v||!P)return null;
+const t=v.manualType||v.type,T=t&&P.types[t];
+if(!T||T.interior_only)return null;
+if(v.manualType)return{make:null,model:null,year:null,variant:null,type:t,itype:null,rows:null,seats:null,ev:0,
+flags:[],typeLabel:T.label,name:v.freeText||T.label,interiorQuoted:false,manual:true,freeText:v.freeText||null};
+const it=v.itype&&(v.itype==='quote'||P.types[v.itype])?v.itype:null;
+return{make:v.make,model:v.model,year:v.year||null,variant:v.variant||null,type:t,itype:it,rows:v.rows==null?null:v.rows,
+seats:Array.isArray(v.seats)?v.seats:null,ev:v.ev?1:0,flags:Array.isArray(v.flags)?v.flags:[],
+name:v.name||[v.year,v.make,v.model,v.variant].filter(Boolean).join(' '),interiorQuoted:it==='quote',manual:false};
+}
+let lazyP=null;
+function loadBuilder(){ 
+if(lazyP)return lazyP;
+const css=C.quoteCss,srcs=(C.lazyQuote||[]).slice();
+if(css&&!d.querySelector('link[data-quote-css]')){const l=d.createElement('link');l.rel='stylesheet';l.href=css;l.setAttribute('data-quote-css','');d.head.appendChild(l);}
+lazyP=srcs.reduce((p,src)=>p.then(()=>new Promise((res,rej)=>{
+const x=d.createElement('script');x.src=src;x.onload=res;x.onerror=()=>rej(new Error('could not load '+src));d.head.appendChild(x);
+})),Promise.resolve());
+lazyP.catch(e=>{lazyP=null;warn('builder did not load',e);});
+return lazyP;
 }
 if(!/^[ief]$/.test(S.track))S.track=dflt('track','f');
 if(S.freq==null)S.freq=dflt('freq','m');
@@ -61,9 +91,13 @@ if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
 if(k==='resto')return mins?P.restorationMinutes(V.e,V.i):P.restoration(V.e,V.i);
 if(!mins&&(k==='enh'||k==='corr'))return P.correction(k,V.e);
+if(!mins&&P.coating){ 
+const c= /^coat(_parts|_save)?:([a-z0-9_]+)$/.exec(k);
+if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c[1]==='_save'?P.coatingSaving:P.coating)(c[2],V.e);
+}
 };
 const TRACK={i:'Interior',e:'Exterior',f:'Full'};
-const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVELS)||['Clean','Clean & Protect','Clean, Restore & Protect'])[l];
+const levelName=l=>((w.LumenBuilder&&w.LumenBuilder.LEVEL_FULL)||['Refresh (Clean)','Reflect (Clean & Protect)','Radiance (Clean, Restore & Protect)'])[l];
 const typeLabel=V=>(V.v&&V.v.typeLabel)||P.types[V.e].label;
 const fill=(a,fn)=>$$('[data-'+a+']').forEach(el=>{
 try{
@@ -78,7 +112,7 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Clean & Protect one at a time ('+avg+').';
+if(k==='pf')return lead+'a Refresh Wash + Interior Reflect (Clean & Protect) one at a time ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
 }
 function planSave(el,k,f,V){
@@ -204,10 +238,15 @@ mo.observe(pk,{attributes:true,attributeFilter:['hidden']});
 });
 }
 function changeVehicle(b){
+if(!w.LumenQuote&&C.lazyQuote&&b.getAttribute('data-change-vehicle')!=='builder'){ 
+b.setAttribute('aria-busy','true');
+return loadBuilder().then(()=>{b.removeAttribute('aria-busy');changeVehicle(b);},()=>{b.removeAttribute('aria-busy');go(PAGE.quote);});
+}
 const Q=w.LumenQuote,pk=b.parentNode.querySelector('[data-veh-picker]');
 if(b.getAttribute('data-change-vehicle')==='builder'||!pk||!Q||!Q.mountPicker){ 
 const q=byId('quote');
-if(q)q.scrollIntoView({block:'start'});
+if(!q)return go(PAGE.quote); 
+q.scrollIntoView({block:'start'});
 if(Q&&Q.focusSearch)Q.focusSearch();
 return;
 }
@@ -309,7 +348,7 @@ const btn=(text,attr,val)=>{const x=d.createElement('button');x.type='button';x.
 let pending=null;
 function ask(s,cur){
 const p=byId('selection');
-if(!p)return;
+if(!p){try{sessionStorage.setItem('lumen_pending_card',JSON.stringify(s));}catch(e){ }return;}
 pending=s;
 const n=cur.vehicles.length,x=s.vehicles[0];
 const what=label(s)+(x.name&&x.name!==label(s)?' · '+x.name:'')+(s.total?' · '+money(s.total)+' estimate':x.priceText?' · '+x.priceText:'');
@@ -336,7 +375,7 @@ machine=txt(card&&card.querySelector('.lvl-track'));priceText=m?null:pt;back='po
 else if(/^plan_(std|pf)$/.test(key)){ 
 const pk=key.slice(5),r=$$('[data-seg="freq"] input[name="freq"]').find(x=>x.value===S.freq);
 route='plan';back='plans';
-lab=txt(el.closest('.card')&&el.closest('.card').querySelector('h3'))+' plan · '+txt(r&&r.closest('label')).toLowerCase();
+lab=txt(el.closest('.card')&&el.closest('.card').querySelector('h3'))+' · '+txt(r&&r.closest('label'));
 priceText=V.q?'quoted from photos':money(P.plan(pk,S.freq,V.e,V.i))+' / visit';
 }
 else if(key==='correction'){ 
@@ -368,8 +407,8 @@ if(!a)return;
 const href=a.getAttribute('href')||'',ours=mine(a);
 if(ours&&a.matches('[data-change-vehicle]'))return changeVehicle(a);
 if(a.matches('[data-edit-selection]')){ 
-const q=byId((sel&& /^(powersports|plans|correct)$/.test(sel.back)&&sel.back)||'quote');
-if(!q)return;
+const id=(sel&& /^(powersports|plans|correct)$/.test(sel.back)&&sel.back)||'quote',q=byId(id);
+if(!q)return go(PAGE[id]); 
 q.scrollIntoView({block:'start'});
 if(!q.hasAttribute('tabindex'))q.setAttribute('tabindex','-1');
 return q.focus({preventScroll:true});
@@ -523,10 +562,24 @@ safe('menu',initMenu);
 safe('action bar',initBar);
 safe('slider',initSlider);
 safe('collapsibles',initCollapse);
-safe('hash',()=>{if(location.hash.length>1)openTarget(location.hash.slice(1));});
+safe('hash',()=>{
+if(location.hash.length<2)return;
+openTarget(location.hash.slice(1));
+const m= /^#ps-([a-z]+)$/.exec(location.hash); 
+if(m&&d.querySelector('[data-ps-panel="'+m[1]+'"]'))S.ps=m[1];
+});
 safe('selection',()=>{ 
 const s=store('lumen_selection');
 showSel(s&&(!s.createdAt||Date.now()-s.createdAt<2592e6)?s:null);
+let pend=null;
+try{pend=JSON.parse(sessionStorage.getItem('lumen_pending_card')||'null');sessionStorage.removeItem('lumen_pending_card');}catch(e){pend=null;}
+const cur=norm(store('lumen_selection')),Bq=w.LumenBuilder;
+if(!pend||!byId('selection')||!cur||!cur.quoteId)return;
+if(pend.route==='powersports'&&pend.total>0&&Bq&&Bq.withCards&&M){
+const card=Object.assign({},pend.vehicles[0],{route:'powersports',back:'powersports'});
+return commit(Bq.withCards(cur,cur.vehicles.filter(y=>y.card&&y.name!==card.name).concat(card),M));
+}
+ask(pend,cur);
 });
 w.LumenSite={render:guard(render),smsHref,month,winter};
 w.LumenSite.render();
