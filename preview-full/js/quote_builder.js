@@ -2,7 +2,7 @@
 'use strict';
 const LEVELS=['Refresh','Renew','Radiance'];
 const LEVEL_DESC=['Clean','Clean & Protect','Clean, Restore & Protect'];
-const LEVEL_FULL=LEVELS.map((n,k)=>`${n} (${LEVEL_DESC[k]})`);
+const LEVEL_FULL=LEVELS.slice();
 const TRACK_NAME={f:'Full',i:'Interior',e:'Exterior'};
 const TRUCKS=new Set(['midpickup','fullpickup','hdpickup']);
 const ACC_CARE=['roof_box','rack','rtt','boards','tonneau','cap'];
