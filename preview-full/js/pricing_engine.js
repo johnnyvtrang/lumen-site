@@ -46,13 +46,26 @@ const price=(track,level,e,i)=>round9(fixed()[track][level]+RATE*pricedMinutes(t
 function included(level,track,kind){
 const al=INC.allowance,fl=INC.from_level;
 if(kind){
-const pr=INC.protected[kind],hasI=kind==='pfull';
-return{car_seat:hasI?pr.car_seat||0:0,gear:pr.gear||0,trim_restore:false,ws_ceramic:false,glass_spots:kind==='reseal'};
+const s=PROT[kind],n=INC.protected[kind].picks;
+return{picks:n,caps:{e:s.e!=null?n:0,i:s.i!=null?n:0},trim_restore:false,ws_ceramic:false,glass_spots:kind==='reseal'};
 }
 const hasE=track==='e'||track==='f',hasI=track==='i'||track==='f',a=(INC.always||{})[String(level)];
 const gf=ADD.water_light.glass_credit_from_level==null?2:ADD.water_light.glass_credit_from_level;
-return{car_seat:hasI?al.car_seat[level]:0,gear:hasE?al.gear[level]:0,trim_restore:hasE&&level>=fl.trim_restore,
+const n=al.picks[level];
+return{picks:n,caps:{e:hasE?n:0,i:hasI?n:0},trim_restore:hasE&&level>=fl.trim_restore,
 ws_ceramic:!!(a&&a.ws_ceramic&&(a.tracks||'').indexOf(track)>=0),glass_spots:hasE&&level>=gf};
+}
+function allot(inc,units){
+const side=INC.allowance.items,flat=[];
+units.forEach(([k,p,q],n)=>{for(let j=0;j<q;j++)flat.push([-p,n,k]);});
+flat.sort((x,y)=>x[0]-y[0]||x[1]-y[1]);
+let left=inc.picks;const caps=Object.assign({},inc.caps),out={};
+for(const[,,k]of flat){
+if(left<=0)break;
+const s=side[k];
+if((caps[s]||0)>0){caps[s]--;left--;out[k]=(out[k]||0)+1;}
+}
+return out;
 }
 function pfMinutes(kind,e,i){
 const s=PROT[kind];i=i||e;
@@ -133,7 +146,7 @@ const lo=Math.min(le,li);
 return sum(EXT,le,T(e))+sum(INT,li,T(i))-OV.min[lo]*T(e)[OV.factor]+always('f',lo)[0];
 };
 const mixedIncluded=(le,li)=>{const x=included(le,'e'),y=included(li,'i');
-return{car_seat:y.car_seat,gear:x.gear,trim_restore:x.trim_restore,ws_ceramic:x.ws_ceramic||y.ws_ceramic,glass_spots:x.glass_spots};};
+return{picks:Math.max(x.picks,y.picks),caps:{e:x.caps.e,i:y.caps.i},trim_restore:x.trim_restore,ws_ceramic:x.ws_ceramic||y.ws_ceramic,glass_spots:x.glass_spots};};
 const hoursLabel=m=>{const h=Math.max(1,Math.floor(m / 30+0.5) / 2);return h===1?'about 1 hour':`about ${h} hours`;};
 const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 (function selfCheck(){
@@ -158,7 +171,7 @@ const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,
 if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
 }
 })();
-return{minutes,price,takeRateMinutes,included,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
+return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};

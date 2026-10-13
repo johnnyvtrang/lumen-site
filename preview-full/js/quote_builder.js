@@ -11,13 +11,13 @@ const LIGHTBAR_NAME={pods:'pods (pair)',s:'bar up to 20"',m:'20–40" bar',l:'40
 const RIDER_NAME={kids:'kids',dogs:'dogs',pets:'other pets',adults:'mostly adults'};
 const INTERIOR_KEYS=['riders','seats','car_seats','pets','stains','stain_where','odor','headliner','lived'];
 const EXTERIOR_KEYS=['outside','water','headlights','protected','trim','special','acc','lightbar'];
-const RESTO_COVERED=new Set(['pet_hair','odor','shampoo_full','shampoo_floor','shampoo_seats','heavy_soil']);
+const RESTO_COVERED=new Set(['pet_hair','pet_hair_light','odor','shampoo_full','shampoo_floor','shampoo_seats','heavy_soil']);
 const HL_LARGE_LENS=30;
 const HL_MAX_COMPLEX=80;
 const MAX_EXTRAS=8;
 const SMS_MAX=600;
 const LABEL={
-pet_hair:'Heavy pet hair',car_seat:'Child car seat deep clean',heavy_soil:'Heavy soil, interior',
+pet_hair:'Heavy pet hair',pet_hair_light:'Light pet hair removal',car_seat:'Child car seat deep clean',heavy_soil:'Heavy soil, interior',
 hl_polish:'Headlight Polish (bundled)',hl_restore:'Headlight Restore (bundled)',hl_restore_max:'Headlight Restore Max (bundled)',
 accessory:'Accessory care',radiance_plus_e:'Halo exterior spray coating',radiance_plus_i:'Halo interior protection',
 leather_coat:'Leather coating',
@@ -27,7 +27,7 @@ const OPEN_NAME= /convertible|cabrio|roadster|spyder|spider|volante|targa/i;
 const SOFT_TOP_MODELS= /\b(wrangler|bronco(?! sport)|mx-5|miata|boxster|s2000|solstice|sky|z3|z4|mustang|camaro|corvette|911|beetle)\b/i;
 const FABRIC_TOPS= /^(MINI (Cooper Convertible|Roadster)|Volkswagen Cabrio|Audi (A[34] )?Cabriolet|Saab (9-3|900) Convertible|Chrysler (PT Cruiser|LeBaron) Convertible|Dodge Shadow Convertible|Pontiac Sun(bird|fire) Convertible|Land Rover Range Rover Evoque Convertible|Nissan Murano CrossCabriolet)\b/;
 const SHORT={
-pet_hair:'Heavy pet hair',odor:'Ozone odor treatment',shampoo_seats:'Shampoo cloth seats',shampoo_floor:'Shampoo carpets & mats',
+pet_hair:'Heavy pet hair',pet_hair_light:'Light pet hair',odor:'Ozone odor treatment',shampoo_seats:'Shampoo cloth seats',shampoo_floor:'Shampoo carpets & mats',
 shampoo_full:'Full interior shampoo',alcantara:'Alcantara care',car_seat:'Child car seat',gloss_trim:'Gloss-black trim polish',
 chrome_trim:'Chrome trim polish',chrome_heavy:'Heavy chrome polish',soft_top:'Soft top care',carbon:'Carbon fiber care',
 heavy_soil:'Heavy soil, interior',water_light:'Water spots, light',water_heavy:'Water spots, heavy',trim_restore:'Trim restoration',
@@ -43,6 +43,7 @@ lightbar:'Light bar / pods',lifted:'Lifted or oversized tires',dually:'Dually',
 };
 const WHY={
 pet_hair:'Heavy hair in seams and carpet takes extra time to pull out.',
+pet_hair_light:'A little hair on the seats and carpet, pulled out with rubber brushes and the vacuum.',
 car_seat:'Shell, buckles and cover cleaned; you reinstall it.',
 odor:'Ozone treatment after the clean, for lingering odors.',
 odor_smoke:'Ozone treatment after the clean, for smoke odor.',
@@ -108,7 +109,7 @@ opt('suede','Genuine suede, nubuck or aniline leather',{materials:['leather','al
 {key:'car_seats',step:'inside',type:'count',legend:'Child car seats to clean',help:'I clean them; you reinstall them for safety.',
 options:[opt(0,'None'),opt(1,'1'),opt(2,'2'),opt(3,'3'),opt(4,'4')]},
 {key:'pets',step:'inside',type:'single',legend:'Pet hair',options:[
-opt('none','None'),opt('some','A little (free)'),opt('heavy','A lot — the dog rides often')]},
+opt('none','None'),opt('some','A little'),opt('heavy','A lot — the dog rides often')]},
 {key:'stains',step:'inside',type:'single',legend:'Stains or spills',options:[
 opt('none','None'),opt('spots','A few spots'),opt('lots','A lot — seats or carpet look dirty overall')]},
 {key:'stain_where',step:'inside',type:'single',legend:'Where?',options:[opt('seats','Seats'),opt('carpet','Carpet'),opt('both','Both')]},
@@ -162,7 +163,6 @@ w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), wit
 coating:"Coated by another shop? Tell me who installed it — some coating warranties also need the installer's annual inspection.",
 restoIncludes:'Restoration Detail includes full extraction, heavy pet hair, stain pre-treatment and ozone; seats come out when needed to clean underneath. It usually runs overnight so everything dries fully. Confirmed from photos.',
 neglectPhotos:'Long-neglected interiors are confirmed from photos.',
-petsFree:'Light pet hair is included — no charge.',
 leatherIncluded:"Leather stains come out in this level's leather deep-clean.",
 trimIncluded:'Faded trim is restored in this level — light or heavy.',
 waterReseal:'Water spots come off in the Decon & Reseal step.',
@@ -184,7 +184,7 @@ glassPrepWalk:"Glass coating prep: coatings bond to clean, smooth glass and seal
 polishMaybe:'Only if etched spots are still there after the chemical spot removal — I check at the walkaround and quote it before starting.',
 cheaperCrp:`${LEVEL_FULL[2]} covers this work for no more than ${LEVEL_FULL[1]} plus add-ons`,
 trimIncludedLine:'Faded trim restored — part of this level.',
-includedWhy:'Part of this level.',
+includedWhy:'Part of this level\'s included extras.',
 alcantaraHeadliner:'If your headliner is Alcantara, it gets the Alcantara method under the headliner line — you pay for it once.',
 };
 function glassPrep(P,e,i,lv){
@@ -389,7 +389,7 @@ why:WHY[key],level:null,source:source||'answer',opt:null,specialty:true});
 if(hasI){
 const lv=ilv;
 if(a.pets==='heavy')add('pet_hair',WHY.pet_hair);
-if(a.pets==='some')note('pets_free',STRINGS.petsFree);
+if(a.pets==='some')add('pet_hair_light',WHY.pet_hair_light); 
 if(a.car_seats>0)add('car_seat',WHY.car_seat,{qty:a.car_seats});
 let st=a.stains,w=a.stain_where;
 const forcedExtraction=pt==='i'&&a.lived==='year'&&level===2;
@@ -669,29 +669,28 @@ glassPrep:hasE?glassPrep(P,e,i,route==='protected'?null:elv):null};
 }
 const mixLabel=(le,li)=>`Exterior: ${LEVELS[le]} · Interior: ${LEVELS[li]}`;
 function applyAllowances(items,inc,P,e,i){
-const free=(x,k)=>{
-const n=x.qty||1;
-k=Math.min(n,k);
-if(k<=0)return 0;
-const unit=x.price / n;
+const AK=P.model.included.allowance.items;
+const pool=items.filter(x=>AK[x.key]&&!x.included);
+const got=P.allot(inc,pool.map(x=>[x.key,x.price / (x.qty||1),x.qty||1]));
+const order=pool.filter(x=>got[x.key]).sort((x,y)=>y.price / (y.qty||1)-x.price / (x.qty||1));
+let used=0;
+order.forEach(x=>{
+const n=x.qty||1,k=Math.min(n,got[x.key]);
+got[x.key]-=k;
+const unit=x.price / n,from=used+1,to=used+k,rng=from===to?`${from}`:`${from}–${to}`;
+used=to;
 x.incl=k;x.price=unit*(n-k);
 const base=x.label.replace(/ ×\d+$/,'');
 if(k===n){
 x.included=true;
-x.label=n>1?`${base} ×${n} (included)`: /\)$/.test(base)?base.replace(/\)$/,', included)'):`${base} (included)`;
+x.label=n>1?`${base} ×${n} (included ${rng} of ${inc.picks})`
+: /\)$/.test(base)?base.replace(/\)$/,`, included ${rng} of ${inc.picks})`):`${base} (included ${rng} of ${inc.picks})`;
 x.why=`${x.why?x.why+' ':''}${STRINGS.includedWhy}`;
-}else x.label=`${base} ×${n} (${k} included)`;
+}else x.label=`${base} ×${n} (${k} included: ${rng} of ${inc.picks})`;
 x.short=`${String(x.short||base).replace(/ ×\d+$/,'')}${n>1?' ×'+n:''}${k===n?' (incl.)':` (${k} incl.)`}`;
-const nm=x.key==='car_seat'?`${k} child seat${k>1?'s':''}`:x.key==='truck_bed'?'truck bed'
+x.inclName=x.key==='car_seat'?`${k} child seat${k>1?'s':''}`:x.key==='truck_bed'?'truck bed':x.key==='pet_hair_light'?'light pet hair'
 :x.names&&x.names.length===1?x.names[0]:`${k} gear item${k>1?'s':''}`;
-x.inclName=nm;
-return k;
-};
-const seat=items.find(x=>x.key==='car_seat');
-if(seat&&inc.car_seat)free(seat,inc.car_seat);
-let g=inc.gear||0;
-const unit=x=>x.price / (x.qty||1);
-items.filter(x=>has(P.model.included.allowance.gear_keys,x.key)).sort((x,y)=>unit(y)-unit(x)).forEach(x=>{if(g>0)g-=free(x,g);});
+});
 void e;void i;
 }
 function travelAdj(c){
@@ -743,6 +742,7 @@ return WHY_LEVEL.crp[pt];
 }
 function includedGain(lo,hi){
 const out=[],incl=(r,k)=>r.items.filter(x=>x.key===k).reduce((n,x)=>n+(x.incl||0),0);
+if(incl(hi,'pet_hair_light')>incl(lo,'pet_hair_light'))out.push('light pet hair');
 const seats=incl(hi,'car_seat')-incl(lo,'car_seat');
 if(seats>0)out.push(seats===1?'child car seat':`${seats} child car seats`);
 const acc=hi.items.find(x=>x.key==='accessory'),names=(acc&&acc.names)||[];
