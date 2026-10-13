@@ -124,8 +124,8 @@ return a[freq]+round10(d);
 const planSavePct=(name,freq,e,i)=>{const one=planOneOff(name,freq,e||'sedan',i);return Math.floor(100*(one-plan(name,freq,e||'sedan',i)) / one);};
 const fullSaving=(level,e,i)=>price('e',level,e)+price('i',level,e,i)-price('f',level,e,i);
 const maxSaving=(e,i)=>Math.max(fullSaving(0,e,i),fullSaving(1,e,i),fullSaving(2,e,i));
-const mixedPrice=(le,li,e,i)=>price('e',le,e)+price('i',li,e,i)-fullSaving(Math.min(le,li),e,i);
-const mixedSaving=(le,li,e,i)=>fullSaving(Math.min(le,li),e,i);
+const mixedPrice=(le,li,e,i)=>Math.min(price('e',le,e)+price('i',li,e,i)-fullSaving(Math.min(le,li),e,i),price('f',Math.max(le,li),e,i));
+const mixedSaving=(le,li,e,i)=>price('e',le,e)+price('i',li,e,i)-mixedPrice(le,li,e,i);
 const mixedMinutes=(le,li,e,i)=>{
 i=i||e;
 if(T(e).interior_only)throw new Error(e+' is interior-only');
@@ -140,7 +140,7 @@ const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 for(const t of'eif')for(let l=0;l<3;l++)if(price(t,l,'sedan')!==A[t][l])console.warn('Lumen pricing: sedan anchor mismatch',t,l);
 for(const k in PROT)if(pfPrice(k,'sedan')!==PROT[k].anchor)console.warn('Lumen pricing: protected anchor mismatch',k);
 if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='29,59,89')console.warn('Lumen pricing: sedan Full saving is not 29/59/89');
-if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='119,129,135,189')console.warn('Lumen pricing: Standard Care sedan ladder is not 119/129/135/189');
+if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='125,139,149,189')console.warn('Lumen pricing: Standard Care sedan ladder is not 125/139/149/189'); 
 for(const k of publicTypes())for(const n of['std','pf'])for(const f of['bw','m','b2','q']){
 const one=planOneOff(n,f,k),p=plan(n,f,k);
 if(!(p<one))console.warn('Lumen pricing: plan not below its one-off',n,f,k);
@@ -150,7 +150,7 @@ if(!(planSavePct('std','bw')>=planSavePct('std','m')&&planSavePct('std','m')>=pl
 console.warn('Lumen pricing: Standard Care saving does not grow with frequency');
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
 for(const k in COAT)if(!COAT[k].parts&&coating(k,'sedan')!==COAT[k].anchor)console.warn('Lumen pricing: coating tier sedan mismatch',k);
-if(CORR_KEYS.map(k=>correction(k,'sedan')).join()!=='399,549,699')console.warn('Lumen pricing: correction grades are not 399/549/699');
+if(CORR_KEYS.map(k=>correction(k,'sedan')).join()!=='399,549,799')console.warn('Lumen pricing: correction grades are not 399/549/799'); 
 if(CARE.prepay2&&carePrepay('sedan')!==349)console.warn('Lumen pricing: Coating Care prepay is not $349 on a sedan');
 if(mixedPrice(2,0,'sedan')!==239||mixedPrice(2,1,'sedan')!==259)console.warn('Lumen pricing: sedan mixed levels are not 239/259');
 for(const k of publicTypes())for(let a=0;a<3;a++)for(let b=0;b<3;b++){
