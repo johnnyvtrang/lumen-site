@@ -972,4 +972,40 @@ adv.addEventListener('change',caChange);
 adv.addEventListener('click',caClick);
 caPaint();
 }
+const nsf=D.getElementById('ns-form');
+if(nsf){
+const nsKey='lumen_notsure_v1';
+let na={};
+try{na=JSON.parse(localStorage.getItem(nsKey)||'{}')||{};}catch(e){na={};}
+const set=(n,v)=>{const x=nsf.querySelector(`input[name="${n}"][value="${v}"]`);if(x)x.checked=true;};
+const nsPaint=()=>{
+const v=st.vehicle&&!st.vehicle.interiorQuoted?st.vehicle:null;
+const mine=nsf.querySelector('[data-ns-mine]');
+if(mine){mine.hidden=!v;if(v)mine.querySelector('[data-ns-mine-name]').textContent=v.name||v.typeLabel||'vehicle';}
+if(!v&&na.size==='mine')na.size='';
+const plan=B.notSurePlan(na,v,P);
+nsf.querySelectorAll('[data-ns-hours]').forEach(x=>{x.textContent=plan.hours;});
+D.querySelectorAll('[data-ns-deposit]').forEach(x=>{x.textContent=money(plan.deposit);});
+nsf.querySelector('[data-ns-address]').hidden=na.where!=='mobile';
+const text=B.notSureText(plan,na);
+nsf.querySelectorAll('[data-ns-send]').forEach(x=>{x.href=smsHref(text);});
+};
+if(na.size)set('ns-size',na.size);if(na.where)set('ns-where',na.where);
+if(na.address)nsf.querySelector('#ns-address').value=na.address;
+if(na.time)nsf.querySelector('#ns-time').value=na.time;
+if(!na.size&&st.vehicle&&!st.vehicle.interiorQuoted){na.size='mine';}
+const nsSave=()=>{try{localStorage.setItem(nsKey,JSON.stringify(na));}catch(e){ }};
+const nsRead=()=>{
+const g=n=>(nsf.querySelector(`input[name="${n}"]:checked`)||{}).value||'';
+na={size:g('ns-size')||na.size||'',where:g('ns-where'),address:nsf.querySelector('#ns-address').value,time:nsf.querySelector('#ns-time').value};
+nsSave();nsPaint();
+};
+nsf.addEventListener('change',nsRead);
+nsf.addEventListener('input',nsRead);
+nsf.addEventListener('submit',e=>e.preventDefault());
+nsf.addEventListener('click',e=>{if(e.target.closest('[data-ns-send]')){try{W.lumenTrack&&W.lumenTrack('sms_click');}catch(x){ }}});
+D.addEventListener('lumen:vehicle',nsPaint);
+if(na.size)set('ns-size',na.size);
+nsPaint();
+}
 })();
