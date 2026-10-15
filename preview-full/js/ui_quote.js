@@ -16,8 +16,9 @@ const lt=n=>{try{if(W.lumenTrack)W.lumenTrack(n);}catch(e){ }};
 const sGet=k=>{try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}};
 const sSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){ }};
 const sDel=k=>{try{localStorage.removeItem(k);}catch(e){ }};
-const smsHref=b=>(CFG.phone&&!CFG.PREVIEW?'sms:'+CFG.phone+'?&body='+encodeURIComponent(b):'#book');
-const mailHref=(sub,b)=>(CFG.email&&!CFG.PREVIEW?'mailto:'+CFG.email+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(b):'#book');
+const BOOK=D.getElementById('book')?'#book':(CFG.root||'')+'quote/#book';
+const smsHref=b=>(CFG.phone&&!CFG.PREVIEW?'sms:'+CFG.phone+'?&body='+encodeURIComponent(b):BOOK);
+const mailHref=(sub,b)=>(CFG.email&&!CFG.PREVIEW?'mailto:'+CFG.email+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(b):BOOK);
 const fire=(n,d)=>D.dispatchEvent(new CustomEvent(n,{detail:d}));
 const mq=q=>!!(W.matchMedia&&W.matchMedia(q).matches);
 const ps0=$('input[name="ps"]:checked');
@@ -236,6 +237,7 @@ if(v){
 st.vehicle=v;st.answers=fit(saved.answers,v,false);st.step=Math.min(6,Math.max(1,saved.step|0||1));
 ui.restored=true;ui.q=v.manual?'':v.name;ui.free=v.freeText||'';LS.vehicle=v;
 }else if(saved.vehicle&&saved.vehicle.make&&saved.vehicle.model)st.pending=saved; 
+else if(saved.answers)st.answers=fit(saved.answers,null,true); 
 }else if(saved)sDel(KEY);
 if(!st.answers)st.answers=fit(null,st.vehicle,true);
 if(LS.vehicle){const f=()=>fire('lumen:vehicle',LS.vehicle);if(D.readyState==='complete')f();else D.addEventListener('DOMContentLoaded',f);}
@@ -823,7 +825,7 @@ out+=`<p class="q-help ca-g3">Grade III: ${esc(M.correction.g3.time_note.replace
 }
 out+=`<div class="ca-lines">${plan.lines.map(x=>line(x.label,x.saving?`${money(x.saving+x.price)} if coated one by one`:x.from?'From — confirmed after inspection and a written quote':'',x.quoted?'Quoted':(x.from?'from ':'')+money(x.price),x===plan.lines[0]?'q-main':'')).join('')}</div>`;
 if(plan.care){
-out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in and a care card. The Annual Coating Service (a Decon &amp; Reseal, ${money(plan.care.annual)}) keeps the warranty — <a href="${CFG.root||'../'}paint-correction-ceramic-coating/#coating-care">how it works</a>.</p>`+
+out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in and a care card. The Annual Coating Service (a Decon &amp; Reseal, ${money(plan.care.annual)}) keeps the warranty — <a href="${D.getElementById('coating-care')?'':(CFG.root||'../')+'paint-correction-ceramic-coating/'}#coating-care">how it works</a>.</p>`+
 `<label class="q-opt ca-pre"><input type="checkbox" name="ca-prepay" value="yes"${ca.prepay==='yes'?' checked':''}><span>Prepay two annual services at installation (about 12% off) <b class="q-amt">${money(plan.care.prepay)}</b></span></label></div>`;
 }
 if(plan.notes.length)out+=`<ul class="q-notes">${plan.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`;
@@ -882,6 +884,11 @@ return;
 const a=st.answers;
 if(a.track==='i')a.track='f';
 a.level='2';a.mix='no';if(a.extras.indexOf('radiance_plus_e')<0)a.extras.push('radiance_plus_e');
+if(!root){ 
+st.step=st.vehicle?6:1;save();
+if(!st.vehicle){const s0=sGet(KEY);if(s0){s0.answers=a;sSet(KEY,s0);}} 
+lt('coat_halo_builder');location.href=(CFG.root||'../')+'quote/';return;
+}
 save();
 if(root){root.scrollIntoView({behavior:mq('(prefers-reduced-motion: no-preference)')?'smooth':'instant',block:'start'});if(st.vehicle)go(6,true);else toStep1();}
 return;

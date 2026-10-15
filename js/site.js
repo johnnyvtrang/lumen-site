@@ -584,6 +584,14 @@ return commit(Bq.withCards(cur,cur.vehicles.filter(y=>y.card&&y.name!==card.name
 }
 ask(pend,cur);
 });
+safe('advisor',()=>{
+const a=byId('advisor');
+if(!a||w.LumenQuote||!C.lazyQuote)return;
+const load=()=>{loadBuilder().catch(()=>{});};
+if(location.hash==='#coating-advisor'||!('IntersectionObserver'in w))return load();
+const io=new IntersectionObserver(es=>{if(es.some(x=>x.isIntersecting)){io.disconnect();load();}},{rootMargin:'600px 0px'});
+io.observe(a);
+});
 w.LumenSite={render:guard(render),smsHref,month,winter};
 w.LumenSite.render();
 })();
