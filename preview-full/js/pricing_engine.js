@@ -1,5 +1,9 @@
 function makePricing(M){
 const RATE=M.rate_per_min,A=M.anchors_sedan,T0=M.types,PROT=M.protected,ADD=M.addons,MOD=M.modifiers;
+for(const k in M.headlights.standalone){
+if(ADD[k].base_from!=='headlights')throw new Error('Lumen pricing: '+k+' must derive its price from M.headlights');
+ADD[k].base=M.headlights.standalone[k]-M.headlights.with_detail_off;
+}
 const EXT=M.minutes_sedan.e,INT=M.minutes_sedan.i,OV=M.minutes_sedan.overlap;
 const INSIDE=new Set(['seats','floor','dash','vents','iglass','cargo','seats+floor']);
 const pyRound=x=>{const f=Math.floor(x),d=x-f;if(Math.abs(d-0.5)<1e-9)return(f%2===0)?f:f+1;return Math.round(x);};
@@ -151,7 +155,7 @@ const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 for(const t of'eif')for(let l=0;l<3;l++)if(price(t,l,'sedan')!==A[t][l])console.warn('Lumen pricing: sedan anchor mismatch',t,l);
 for(const k in PROT)if(pfPrice(k,'sedan')!==PROT[k].anchor)console.warn('Lumen pricing: protected anchor mismatch',k);
 if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='49,59,89')console.warn('Lumen pricing: sedan Full saving is not 49/59/89'); 
-if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='135,149,155,215')console.warn('Lumen pricing: Standard Care sedan ladder is not 135/149/155/215'); 
+if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='139,149,155,215')console.warn('Lumen pricing: Standard Care sedan ladder is not 139/149/155/215'); 
 for(const k of publicTypes())for(const n of['std','pf'])for(const f of['bw','m','b2','q']){
 const one=planOneOff(n,f,k),p=plan(n,f,k);
 if(!(p<one))console.warn('Lumen pricing: plan not below its one-off',n,f,k);
