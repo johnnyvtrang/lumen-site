@@ -163,7 +163,7 @@ if(k!=='max'&&!m)return undefined;
 hide(el.closest('.save-line')||el,V.q);
 return money(m?P.fullSaving(m[1]-1,V.e,V.i):P.maxSaving(V.e,V.i));
 });
-fill('save-badge',el=>{hide(el,V.q);return'Saves up to '+money(P.maxSaving(V.e,V.i));}); 
+fill('save-badge',el=>{hide(el,V.q);return'up to '+money(P.maxSaving(V.e,V.i))+' less than separately';});
 fill('plan',(el,k)=>{
 if(!M.plans[k])return undefined;
 smalls(el,V.q);
@@ -180,7 +180,7 @@ if(!fs.every(x=>x in F))return undefined;
 hide(el,!fs.every(x=>F[x]));
 return null;
 });
-fill('addon-count',el=>String($$('tbody tr:not(.tgroup)',el.closest('details,section')||d).filter(r=>!r.hidden).length));
+fill('addon-count',el=>String($$('tbody tr:not(.tgroup), .al-row',el.closest('details,section')||d).filter(r=>!r.closest('[hidden]')).length));
 fill('winter',el=>{hide(el,!winter);return null;});
 fill('not-winter',el=>{hide(el,winter);return null;});
 smsBodies();
@@ -382,6 +382,7 @@ priceText=V.q?'quoted from photos':money(P.plan(pk,S.freq,V.e,V.i))+' / visit';
 else if(/^correction(_g[123])?$/.test(key)){ 
 const g=key.slice(11)||'g1';
 route='correction';back='correct';lab='Paint correction '+M.correction[g].short;priceText='from '+money(calc(g,V));
+if(M.correction[g].dropoff_only)priceText+=' · '+M.correction[g].time_note.toLowerCase(); 
 }
 else return warn('unknown data-book "'+key+'"');
 if(k&&!(V.q&&INSIDE.test(k))){price=calc(k,V);minutes=calc(k,V,1);}

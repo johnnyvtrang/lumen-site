@@ -147,11 +147,6 @@ return sum(EXT,le,T(e))+sum(INT,li,T(i))-OV.min[lo]*T(e)[OV.factor]+always('f',l
 };
 const mixedIncluded=(le,li)=>{const x=included(le,'e'),y=included(li,'i');
 return{picks:Math.max(x.picks,y.picks),caps:{e:x.caps.e,i:y.caps.i},trim_restore:x.trim_restore,ws_ceramic:x.ws_ceramic||y.ws_ceramic,glass_spots:x.glass_spots};};
-const inspectionSlot=(e,size,i)=>{
-const s=M.policy.inspection_slot,tr=s.slot.track,lv=s.slot.level;
-const m=e?minutes(tr,lv,e,i):Math.max(...s.sizes[size].map(t=>minutes(tr,lv,t)));
-return{deposit:s.deposit,minutes:m,hours:hoursLabel(m)};
-};
 const hoursLabel=m=>{const h=Math.max(1,Math.floor(m / 30+0.5) / 2);return h===1?'about 1 hour':`about ${h} hours`;};
 const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 (function selfCheck(){
@@ -177,6 +172,6 @@ if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.
 }
 })();
 return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
-fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,inspectionSlot,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
+fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};
