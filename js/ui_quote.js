@@ -3,7 +3,7 @@
 const W=window,D=document,CFG=W.LUMEN_CONFIG||{},NOW_Y=new Date().getFullYear();
 const KEY='lumen_quote_v2',SELKEY='lumen_selection',MAX_AGE=30*864e5;
 const BODY=Object.assign({generic:"Hi Johnny, I'd like a detail quote. My car: ",exotic:"Hi Johnny, I'd like a quote for my exotic/classic: ",
-disaster:"Hi Johnny, I'd like a Disaster/Restoration quote. Photos attached. My car: "},CFG.smsBodies||{});
+condition:"Hi Johnny, here are photos of my car's condition. My car: "},CFG.smsBodies||{});
 const $=(s,el)=>(el||D).querySelector(s),$$=(s,el)=>Array.from((el||D).querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const money=n=>'$'+Math.round(Math.abs(n)).toLocaleString('en-US');
@@ -432,7 +432,7 @@ const e=v.type,i=v.itype&&v.itype!=='quote'?v.itype:undefined;
 const sv=v.interiorQuoted?0:rf.route==='protected'?P.pfPrice('refresh',e,i)+P.price('i',2,e,i)-P.pfPrice('pfull',e,i)
 :rf.mix?rf.mix.saving:P.fullSaving(fl,e,i);
 deco={track:{f:sv>0?` <span class="save">Saves ${money(sv)}</span>`:''},
-level:{auto:amt(ra,ra.levelLabel),0:amt(r.levels[0]),1:amt(r.levels[1]),2:amt(r.levels[2],r.levels[2].route==='restoration'?'Restoration Detail':'')}};
+level:{auto:amt(ra,ra.levelLabel),0:amt(r.levels[0]),1:amt(r.levels[1]),2:amt(r.levels[2])}}; 
 if(r.mixOptions)['i','e'].forEach(sd=>{
 const d={};
 r.mixOptions[sd].forEach(o=>{d[o.value]=amt(o,o.value==='auto'?B.LEVELS[o.level]:'');});
@@ -509,10 +509,10 @@ const gx=r.extras.filter(x=>!x.group),lx=r.extras.filter(x=>x.group==='glass'),s
 const ux=r.extras.filter(x=>x.group==='surface'); 
 const hx=r.extras.filter(x=>x.group==='hl'); 
 const grp=(title,sub,id,items,sr)=>`<fieldset class="q-xgf"><legend class="q-xg${sr?' sr-only':''}">${esc(title)}</legend>${sub?`<p class="q-xgp"${id?` id="${id}"`:''}>${esc(sub)}</p>`:''}${items}</fieldset>`;
-$('.q-xl',ex).innerHTML=(hx.length?grp('Headlights','Restore Max: Restore plus a sprayed 2K clear, cured in your garage','',hx.map(x=>xHTML(x)).join('')):'')+
+$('.q-xl',ex).innerHTML=(hx.length?grp('Headlights','Headlight restoration, Grade III: the full restoration plus a sprayed 2K clear coat, cured in your garage','',hx.map(x=>xHTML(x)).join('')):'')+
 (gx.length?grp('Extras','','',gx.map(x=>xHTML(x)).join(''),true):'')+
 (lx.length?grp(B.STRINGS.glassTitle,r.glassPrep||'','q-glass-prep',lx.map(x=>xHTML(x,r.glassPrep?'q-glass-prep':'')).join('')):'')+
-(ux.length?grp('Wheels, trim & tires','Quick protection, or a multi-year coating','',ux.map(x=>xHTML(x)).join('')):'')+
+(ux.length?grp('Wheels, trim & tires','Each coating is named by its maker\'s durability rating','',ux.map(x=>xHTML(x)).join('')):'')+
 (sx.length?grp('Specialty surfaces','Same price at every level','',sx.map(x=>xHTML(x)).join('')):'');
 const trip=st.trip.length>0,q=current();
 $('#q-totl',root).textContent=quoted?'Estimate':(trip?'This vehicle':'Estimated total')+(r.interiorQuoted?' (exterior)':'');
@@ -804,7 +804,7 @@ interior:{leather:amt(P.addon('leather_coat',e).price),fabric:amt(P.addon('fabri
 const qs=B.ADVISOR.map((q,k)=>{
 if(q.key==='paint'&&!gloss)return`<p class="q-help ca-skip"><span class="ca-n" aria-hidden="true">5</span>No polishing on matte, satin, wrap or film — the coating goes on after a decon wash.</p>`;
 let h=caFs(q,plan,deco[q.key],NUMS[k]);
-if(q.key==='glass')h=`<p class="ca-sub">Surfaces · multi-year coatings, applied with the paint coating</p>`+h;
+if(q.key==='glass')h=`<p class="ca-sub">Surfaces · longer-rated coatings, applied with the paint coating</p>`+h;
 if(q.key==='more')h+=`<p class="ca-cmp"><button type="button" class="btn btn-ghost btn-sm" data-ca="complete">All four surfaces (Complete) — ${money(P.coating('complete',e))}</button> <small>All glass, trim, wheel faces &amp; tires</small></p>`;
 if(q.key==='interior')h+=`<p class="q-help">Both: the leather + Alcantara/fabric option, ${money(P.addon('leather_fabric_coat',e).price)}. Fabric needs to be dry: never the same day as shampoo or extraction.</p>`;
 return h;
@@ -919,7 +919,7 @@ if(root){
 root.classList.add('q-on');
 root.setAttribute('role','region');
 root.setAttribute('aria-labelledby','q-title');
-const mold=esc(B.STRINGS.mold).replace('Text photos',`<a href="${esc(smsHref(BODY.disaster))}" data-act="sms">Text photos</a>`);
+const mold=esc(B.STRINGS.mold).replace('Text photos',`<a href="${esc(smsHref(BODY.condition))}" data-act="sms">Text photos</a>`);
 root.innerHTML=`<div class="q-top"><h3 id="q-title" class="q-title">Get my price</h3><p class="q-sub">A price for your exact vehicle, in about a minute. An estimate, confirmed at the walkaround.</p></div><p class="q-rst" id="q-rst" hidden></p><div class="q-tb" id="q-tb" hidden></div><div class="q-prog"><p id="q-pt"></p><div class="q-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div><div id="q-body"></div><p class="q-mold">${mold}</p><div class="q-nav" id="q-nav"></div><p class="sr-only" id="q-ann" aria-live="polite"></p>`;
 body=$('#q-body',root);nav=$('#q-nav',root);
 root.addEventListener('click',e=>{

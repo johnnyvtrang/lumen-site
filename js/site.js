@@ -84,12 +84,11 @@ if(v.itype&&v.itype!=='quote'){if(P.types[v.itype])i=v.itype;else warn('unknown 
 return{v,e,i,q:!!v&&!!(v.interiorQuoted||v.itype==='quote')};
 }
 const LVL= /^([eif])([123])$/,PF={pf_refresh:'refresh',pf_reseal:'reseal',pf_full:'pfull'};
-const INSIDE= /^[if][123]$|^resto$|^pf_full$/; 
+const INSIDE= /^[if][123]$|^pf_full$/; 
 const calc=(k,V,mins)=>{ 
 const m=LVL.exec(k);
 if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
-if(k==='resto')return mins?P.restorationMinutes(V.e,V.i):P.restoration(V.e,V.i);
 if(!mins&& /^g[123]$/.test(k)&&M.correction[k])return P.correction(k,V.e); 
 if(!mins&&k==='care:prepay2'&&P.carePrepay)return P.carePrepay(V.e); 
 if(!mins&&P.coating){ 
@@ -262,9 +261,8 @@ const live=!!C.phone&&!C.PREVIEW;
 const smsHref=body=>'sms:'+(C.phone||'')+'?&body='+encodeURIComponent(body);
 function label(s){ 
 if(s.label)return s.label;
-if(s.route==='restoration')return'Restoration Detail';
 if(s.route==='protected'&&M)return M.protected[M.protected[s.kind]?s.kind:s.track==='f'?'pfull':'refresh'].label;
-if(s.levelLabel&& /^(Full|Interior|Exterior|Restoration)\b/.test(s.levelLabel))return s.levelLabel;
+if(s.levelLabel&& /^(Full|Interior|Exterior)\b/.test(s.levelLabel))return s.levelLabel;
 const lvl=s.levelLabel||(s.route==='quoted'||!(s.level>=0)?'':levelName(s.level));
 return((TRACK[s.track]||'')+(lvl?' '+lvl:'')).trim()||'Detail';
 }
@@ -366,7 +364,8 @@ if(t&&L){k=t+L;lab=TRACK[t]+' '+levelName(L-1);}
 else if(PF[key]){k=key;route='protected';lab=M.protected[PF[key]].label;}
 else if(/^hl_/.test(key)){ 
 const card=el.closest('.card'),m= /\$([\d,]+)/.exec(txt(card&&card.querySelector('.price')));
-route='headlights';lab='Headlight '+txt(card&&card.querySelector('h3'));price=m&&+m[1].replace(/,/g,'');
+const h3=txt(card&&card.querySelector('h3'));
+route='headlights';lab= /^headlight/i.test(h3)?h3:'Headlight '+h3;price=m&&+m[1].replace(/,/g,'');
 }
 else if(key==='ps'){ 
 const card=el.closest('.card'),pt=txt(card&&card.querySelector('.price')),m= /^\$([\d,]+)$/.exec(pt);

@@ -109,8 +109,6 @@ function heavySoil(level,i){
 const c=M.condition.heavy,m=c.share_of_interior_labor*sum(INT,level,T(i));
 return{price:Math.max(c.min_usd,round5(RATE*m)),minutes:m};
 }
-const restoration=(e,i)=>round9(price('f',2,e,i)+addon('shampoo_full',e,i).price);
-const restorationMinutes=(e,i)=>minutes('f',2,e,i)+addon('shampoo_full',e,i).minutes+M.specialty.restoration.extra_min;
 const correction=(kind,e)=>round9(M.correction[kind].anchor*(0.1+0.9*T(e).paint));
 const COAT=(M.coatings&&M.coatings.tiers)||{},CARE=(M.coatings&&M.coatings.care)||{};
 const coatRound=d=>(d.rounding==='nearest_10'?round10:round9);
@@ -152,8 +150,8 @@ const publicTypes=()=>Object.keys(T0).filter(k=>!T0[k].interior_only);
 (function selfCheck(){
 for(const t of'eif')for(let l=0;l<3;l++)if(price(t,l,'sedan')!==A[t][l])console.warn('Lumen pricing: sedan anchor mismatch',t,l);
 for(const k in PROT)if(pfPrice(k,'sedan')!==PROT[k].anchor)console.warn('Lumen pricing: protected anchor mismatch',k);
-if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='29,59,89')console.warn('Lumen pricing: sedan Full saving is not 29/59/89');
-if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='125,139,149,189')console.warn('Lumen pricing: Standard Care sedan ladder is not 125/139/149/189'); 
+if([0,1,2].map(l=>fullSaving(l,'sedan')).join()!=='49,59,89')console.warn('Lumen pricing: sedan Full saving is not 49/59/89'); 
+if(['bw','m','b2','q'].map(f=>plan('std',f,'sedan')).join()!=='135,149,155,215')console.warn('Lumen pricing: Standard Care sedan ladder is not 135/149/155/215'); 
 for(const k of publicTypes())for(const n of['std','pf'])for(const f of['bw','m','b2','q']){
 const one=planOneOff(n,f,k),p=plan(n,f,k);
 if(!(p<one))console.warn('Lumen pricing: plan not below its one-off',n,f,k);
@@ -165,13 +163,13 @@ for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.i
 for(const k in COAT)if(!COAT[k].parts&&coating(k,'sedan')!==COAT[k].anchor)console.warn('Lumen pricing: coating tier sedan mismatch',k);
 if(CORR_KEYS.map(k=>correction(k,'sedan')).join()!=='399,549,799')console.warn('Lumen pricing: correction grades are not 399/549/799'); 
 if(CARE.prepay2&&carePrepay('sedan')!==349)console.warn('Lumen pricing: Coating Care prepay is not $349 on a sedan');
-if(mixedPrice(2,0,'sedan')!==239||mixedPrice(2,1,'sedan')!==259)console.warn('Lumen pricing: sedan mixed levels are not 239/259');
+if(mixedPrice(2,0,'sedan')!==219||mixedPrice(2,1,'sedan')!==269)console.warn('Lumen pricing: sedan mixed levels are not 219/269'); 
 for(const k of publicTypes())for(let a=0;a<3;a++)for(let b=0;b<3;b++){
 const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,b),k);
 if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
 }
 })();
-return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,restoration,restorationMinutes,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
+return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};
