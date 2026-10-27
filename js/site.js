@@ -431,9 +431,8 @@ try{navigator.clipboard.writeText(text).then(()=>toast('Quote copied — paste i
 }
 if(href[0]==='#')openTarget(href.slice(1));
 if(!ours)return; 
-if(a.hasAttribute('data-sms')|| /^sms:/.test(href))track('sms_click');
-else if(a.hasAttribute('data-tel')|| /^tel:/.test(href))track('call_click');
-else if(a.matches('[data-book],[data-book-online]')||(href==='#book'&&a.classList.contains('btn')))track('book_click');
+if(a.hasAttribute('data-sms')|| /^sms:/.test(href)||a.hasAttribute('data-tel')|| /^tel:/.test(href))return;
+if(a.matches('[data-book],[data-book-online]')||(href==='#book'&&a.classList.contains('btn')))track('book_click');
 }
 function toast(msg){ 
 const s=byId('selection'),p=d.createElement('p');
