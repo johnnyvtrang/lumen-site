@@ -165,7 +165,7 @@ opt('reg','Mobile — Regional zone',{fee:'reg'}),opt('studio','Studio drop-off'
 const STRINGS={
 mold:'Mold, flood or rodents? Text photos — those start with an assessment.', 
 quotedInterior:'Interior: quoted from photos (12–15-passenger and camper interiors vary too much to price online).',
-w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), with the same price and protection steps. Undercarriage flushes are available year-round.',
+w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), with the same price and protection steps. Undercarriage flushes are available year-round on above-freezing days, over a containment mat that captures the run-off.',
 coating:"Coated by another shop? Tell me who installed it — some coating warranties also need the installer's annual inspection.",
 neglectPhotos:'Long-neglected interiors are confirmed from photos.',
 leatherIncluded:"Leather stains come out in this level's leather deep-clean.",
@@ -985,8 +985,8 @@ ADV('years','single','How long do you want it protected?',[opt('1','About a year
 opt('5','4–5 years or more')]),
 ADV('use','multi','How is it driven and kept?',[opt('daily','Daily commuter'),opt('salt','Winter salt roads'),opt('offroad','Off-road or trails'),
 opt('work','Worksite or job truck'),opt('garage','Garage-kept')],{help:'Choose all that fit.'}),
-ADV('look','single','What matters most?',[opt('beading','Extreme water beading'),opt('gloss','Deep, wet gloss'),opt('easy','Easiest to wash'),
-opt('any','No strong preference')]),
+ADV('look','single','What do you care about most?',[opt('easy','Easier to clean & maintain'),opt('gloss','Gloss & depth'),
+opt('beading','Extreme water beading'),opt('budget','Budget-friendly'),opt('any','No strong preference')]),
 ADV('paint','single','How does the paint look today?',[opt('great','Looks great'),opt('light','Light swirls'),opt('heavy','Heavy swirls or scratches')],
 {help:'Look in direct sun or under a flashlight. Every panel is paint-gauged before I polish.'}),
 ADV('glass','single','Glass',[opt('none','No glass coating'),opt('ws','Windshield'),opt('all','All glass')]),
@@ -995,7 +995,7 @@ ADV('more','multi','Also coat',[opt('trim','Black trim'),opt('tires','Tires'),op
 ADV('interior','multi','Interior coatings (Halo inside)',[opt('leather','Leather'),opt('fabric','Fabric & Alcantara')]),
 ];
 const ADV_VALUES={finish:['gloss','matte','vinyl','ppf'],years:['1','3','5'],use:['daily','salt','offroad','work','garage'],
-look:['beading','gloss','easy','any'],paint:['great','light','heavy'],glass:['none','ws','all'],wheels:['none','faces','off'],
+look:['beading','gloss','easy','budget','any'],paint:['great','light','heavy'],glass:['none','ws','all'],wheels:['none','faces','off'],
 more:['trim','tires','calipers'],interior:['leather','fabric'],level:['auto','rplus','essential','signature','reserve','film'],
 grade:['auto','none','g1','g2','g3'],prepay:['no','yes'],flush:['no','yes'],garage:['','yes','no','unsure']};
 const advisorDefaults=()=>({finish:'gloss',years:'3',use:[],look:'any',paint:'light',glass:'none',wheels:'none',more:[],interior:[],
@@ -1004,7 +1004,7 @@ const HARSH={salt:'winter salt',offroad:'trails',work:'job sites'};
 const EURO= /^(Alfa Romeo|Aston Martin|Audi|Bentley|BMW|Ferrari|Jaguar|Lamborghini|Land Rover|Lotus|Maserati|McLaren|Mercedes|MINI|Mini|Polestar|Porsche|Rolls-Royce|Volkswagen|Volvo)\b/;
 const FIN_NAME={gloss:'Gloss paint',matte:'Matte/satin',vinyl:'Vinyl wrap',ppf:'PPF'};
 const YRS_NAME={1:'~1 year',3:'2–3 years',5:'4–5+ years'};
-const LOOK_NAME={beading:'max beading',gloss:'wet gloss',easy:'easy washing'};
+const LOOK_NAME={beading:'max beading',gloss:'gloss & depth',easy:'easy washing',budget:'budget-friendly'};
 const PAINT_NAME={great:'paint looks great',light:'light swirls',heavy:'heavy swirls'};
 function advisorAnswers(ans){
 const a0=ans||{},d=advisorDefaults(),a={};
@@ -1062,8 +1062,10 @@ if(!harsh.length&&!garageKept&&has(a.use,'daily'))why.push('Daily commuter: any 
 const stepUp=()=>''; 
 if(gloss&&a.years!=='1'){
 if(a.look==='beading')why.push(level==='reserve'?'Extreme beading: Reserve beads hardest.':`Extreme beading: Reserve beads hardest${stepUp()}.`);
-if(a.look==='gloss')why.push('Deep, wet gloss: Signature is the gloss-focused layer.');
-if(a.look==='easy')why.push(level==='reserve'?"Easiest to wash: Reserve's slick top layer lets dirt rinse off.":`Easiest to wash: Reserve's slick top layer lets dirt rinse off${stepUp()}.`);
+if(a.look==='gloss')why.push('Gloss & depth: Signature is the gloss-focused layer.');
+if(a.look==='budget')why.push(level==='essential'?'Budget-friendly: Essential is the lowest-priced paint coating, maker-rated up to 24 months.'
+:'Budget-friendly: Essential is the lowest-priced paint coating (maker-rated up to 24 months); choose it under Coating if it covers how long you\'ll keep the car.');
+if(a.look==='easy')why.push(level==='reserve'?"Easier to clean: Reserve's slick top layer lets dirt rinse off.":`Easier to clean: every level sheds water and dirt; Reserve's slick top layer lets it rinse off most readily${stepUp()}.`);
 }
 if(gloss&&grade)why.push({great:'Paint looks great: Grade I, a one-step polish (gloss enhancement).',light:'Light swirls: Grade II, a one-step compound & polish.',
 heavy:'Heavy swirls or scratches: Grade III, two steps — compound, then polish.'}[a.paint]+(grade!==recGrade?` You chose ${M.correction[grade].short}.`:''));
