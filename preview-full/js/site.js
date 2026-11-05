@@ -590,6 +590,18 @@ if(location.hash==='#coating-advisor'||!('IntersectionObserver'in w))return load
 const io=new IntersectionObserver(es=>{if(es.some(x=>x.isIntersecting)){io.disconnect();load();}},{rootMargin:'600px 0px'});
 io.observe(a);
 });
+safe('funnel',()=>{
+const q=byId('quote');
+if(!q)return;
+let started=false,sent=false;
+const start=()=>{if(!started){started=true;track('quote_started');}};
+['change','input'].forEach(n=>q.addEventListener(n,start,true));
+q.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('a,button,input,label,select,[data-act]'))start();},true);
+d.addEventListener('click',guard(e=>{
+const a=!sent&&e.target.closest&&e.target.closest('#q-acts [data-act="sms"],#q-acts [data-act="mail"],#q-acts [data-act="book"],#book a[data-sms="book"],#book [data-book-online]');
+if(a){sent=true;track('quote_sent');}
+}),true);
+});
 w.LumenSite={render:guard(render),smsHref,month,winter};
 w.LumenSite.render();
 })();
