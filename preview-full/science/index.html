@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
-<link rel="stylesheet" href="../css/styles.css?v=a9a457b8">
+<link rel="stylesheet" href="../css/styles.css?v=b0409617">
 <script>document.documentElement.className='js'</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-565CJGTT2G"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-565CJGTT2G');</script>
 </head>
@@ -60,7 +60,6 @@
 <div>
 <p class="grp-l">Services</p>
 <ul>
-<li><a href="../">Home</a></li>
 <li><a href="../detailing/">Detailing</a></li>
 <li><a href="../headlight-restoration/">Headlight restoration</a></li>
 <li><a href="../paint-correction-ceramic-coating/">Paint correction &amp; coatings</a></li>
@@ -77,6 +76,7 @@
 <ul>
 <li><a href="../about/">About</a></li>
 <li><a href="../science/" aria-current="page">The science</a></li>
+<li><a href="../lab-notes/">Lab Notes</a></li>
 <li><a href="../faq/">FAQ</a></li>
 <li><a href="../areas/">Service areas</a></li>
 <li><a href="../gift-cards/">Gift cards</a></li>
@@ -107,7 +107,7 @@
 <div class="plate">
 <img src="../img/beading.webp" srcset="../img/beading-800.webp 800w, ../img/beading.webp 1408w" sizes="100vw" width="1408" height="880" fetchpriority="high" alt="Macro view of tight water beads sitting on dark, protected paint">
 <div class="reticle" aria-hidden="true"><span>Beading: protection at work</span></div>
-<div class="cap"><div class="wrap"><span class="data">Fig. 01</span><span class="data">Water on protected paint</span></div></div>
+<div class="cap"><div class="wrap"><span class="data">Stock photo</span><span class="data">Water on protected paint</span></div></div>
 </div>
 <div class="sec tight-top">
 <div class="wrap">
@@ -122,7 +122,7 @@
 <li><a href="#salt"><span class="n">02</span><span class="t">Road salt</span><span class="data">NaCl · MgCl<sub>2</sub></span></a></li>
 <li><a href="#coatings"><span class="n">03</span><span class="t">Ceramic coatings</span><span class="data">SiO<sub>2</sub> · contact angle</span></a></li>
 <li><a href="#iron"><span class="n">04</span><span class="t">Iron &amp; clay</span><span class="data">Fe<sup>3+</sup> → Fe<sup>2+</sup></span></a></li>
-<li><a href="#clear-coat"><span class="n">05</span><span class="t">Polishing</span><span class="data">Measured in µm</span></a></li>
+<li><a href="#clear-coat"><span class="n">05</span><span class="t">Polishing</span><span class="data">Measured in <span class="unit">µm</span></span></a></li>
 <li><a href="#organics"><span class="n">06</span><span class="t">Enzymes &amp; soaps</span><span class="data">Protease · lipase</span></a></li>
 <li><a href="#hard-water"><span class="n">07</span><span class="t">Hard water &amp; DI</span><span class="data">Ca<sup>2+</sup> · Mg<sup>2+</sup></span></a></li>
 <li><a href="#steam"><span class="n">08</span><span class="t">Steam</span><span class="data">200 °F+</span></a></li>
@@ -169,7 +169,7 @@
 <p><b>Prep decides the bond.</b> A coating can only bond to what it touches. Wax, polishing oils, old dressings or embedded iron sit between the coating and the paint, so most of the work is prep: decontamination (iron remover and clay), polishing, then a solvent panel wipe so the coating meets bare, clean clear coat.<sup class="ref"><a href="#src-9">9</a></sup></p>
 <p><b>Why coatings "clog".</b> Over months, hard-water minerals and road film settle on top of the coating and mask it; the coating is still there, but the beading goes flat. An acidic decon dissolves that mineral layer and often brings the beading back. One coating maker rates its current coatings to tolerate pH 2–11, which is why a mild acid is safe on them.<sup class="ref"><a href="#src-9">9</a></sup></p>
 <p><b>Soap, ceramic sealant, coating.</b> The difference is how much is laid down and how long it lasts. A wax soap leaves a little gloss between washes; a ceramic soap leaves a slick layer maker-rated up to 3 months; a hand-applied ceramic sealant is maker-rated up to 6 months or 50 washes; a spray coating is maker-rated up to 12–18 months, about a year; a true coating is a multi-year layer (one maker rates its lighter professional coating at up to 5 years, properly applied and maintained).<sup class="ref"><a href="#src-10">10</a></sup> Those are the manufacturers' ratings; real life depends on how the car is driven, washed and stored.</p>
-<p class="takeaway"><b>Why it matters for your car:</b> a coating is only as good as the surface under it, which is why the paint is always polished first. <a href="../paint-correction-ceramic-coating/#coatings">Choose your coating</a>.</p>
+<p class="takeaway"><b>Why it matters for your car:</b> a coating is only as good as the surface under it, which is why every coating gets a full decontamination, clay and panel wipe first, and why swirls are polished out first if you want them gone. <a href="../paint-correction-ceramic-coating/#coatings">Choose your coating</a>.</p>
 </div>
 </article>
 <article class="sci" id="iron" aria-labelledby="h-iron">
@@ -179,19 +179,19 @@
 <h2 id="h-iron">Iron, <em>made visible.</em></h2>
 <p class="sci-tag data">Fe<sup>3+</sup> → Fe<sup>2+</sup> · purple complex</p>
 <p>Every time you brake, pads and rotors shed tiny, hot particles of iron. They land on wheels and paint, embed in the clear coat and rust in place, which is why paint can feel rough right after a wash. Cars parked near rail lines collect the same thing as "rail dust".</p>
-<p>Most iron removers are built on thioglycolate. It reduces ferric iron (Fe<sup>3+</sup>) to ferrous iron (Fe<sup>2+</sup>) and binds it into a soluble complex that rinses away, and that ferrous complex is purple.<sup class="ref"><a href="#src-11">11</a></sup> The "bleeding" you see is the reaction happening. Mine turns violet as it works.</p>
+<p>Most iron removers are built on thioglycolate. It reduces ferric iron (Fe<sup>3+</sup>) to ferrous iron (Fe<sup>2+</sup>) and binds it into a soluble complex that rinses away, and that ferrous complex is purple.<sup class="ref"><a href="#src-11">11</a></sup> The "bleeding" you see is the reaction happening. The one we use turns violet as it works.</p>
 <p>Chemistry only dissolves iron. Tar, overspray and bonded grit don't react, so clay handles what chemistry can't: a lubricated clay bar glides over the paint and mechanically shears off whatever sticks up above the surface. Iron comes off first, so those particles aren't dragged across the paint.</p>
 <p class="takeaway"><b>Why it matters for your car:</b> smooth, clean clear coat is what polish and protection need. Iron removal is part of Renew and up; clay at Radiance. <a href="../detailing/#compare">Compare the levels</a>.</p>
 </div>
 </article>
 <article class="sci" id="clear-coat" aria-labelledby="h-cc">
-<span class="sym" aria-hidden="true">µm</span>
+<span class="sym" aria-hidden="true"><span class="unit">µm</span></span>
 <div class="body">
 <p class="label">05 · Polishing &amp; paint correction</p>
 <h2 id="h-cc">Clear coat <em>is finite.</em></h2>
-<p class="sci-tag data">Clear coat ≈ 35–50 µm</p>
+<p class="sci-tag data">Clear coat ≈ 35–50 <span class="unit">µm</span></p>
 <p>Swirls and scratches are tiny valleys in the clear coat. Light catches their edges and scatters, so they show up as a web of fine lines. Polish doesn't fill them: abrasives cut the surrounding clear coat down to the depth of the defect, so the surface is level again and reflects light evenly.</p>
-<p>There isn't much to work with. Factory clear coat is usually about 35–50 microns (µm) thick, and the whole factory paint stack about 100–180 µm; DeFelsko notes that manufacturers reportedly advise removing no more than about 8 µm of clear.<sup class="ref"><a href="#src-12">12</a></sup> A paint-depth gauge reads the whole stack, so readings are compared panel to panel to find thin, repainted or previously polished areas.</p>
+<p>There isn't much to work with. Factory clear coat is usually about 35–50 microns (<span class="unit">µm</span>) thick, and the whole factory paint stack about 100–180 <span class="unit">µm</span>; DeFelsko notes that manufacturers reportedly advise removing no more than about 8 <span class="unit">µm</span> of clear.<sup class="ref"><a href="#src-12">12</a></sup> A paint-depth gauge reads the whole stack, so readings are compared panel to panel to find thin, repainted or previously polished areas.</p>
 <p>So correction is measured and conservative. Every panel is gauged before we polish, and again as we go: we take off only what's needed, measured in microns, with the least aggressive pad and polish that does the job. You get 50/50 photos, half corrected and half not.</p>
 <p class="takeaway"><b>Why it matters for your car:</b> clear coat is what protects the color underneath, and it doesn't grow back. Not sure? We're glad to do a free test spot first. <a href="../paint-correction-ceramic-coating/#correct">Paint correction</a>.</p>
 </div>
@@ -264,7 +264,7 @@
 <p class="sci-tag data">Polycarbonate · UV hard coat</p>
 <p>Modern headlight lenses are polycarbonate: tough, light, and vulnerable to sunlight. From the factory they carry a thin hard coat with UV absorbers. Years of UV and heat break that coat down, then start to oxidize the plastic underneath. The result is haze, then yellowing, then a lens that scatters light instead of projecting it. UV intensity also increases with altitude,<sup class="ref"><a href="#src-23">23</a></sup> and the valley floor sits above 4,000 feet.</p>
 <p>Restoration removes the failed, oxidized layer by sanding and machine polishing, which also removes whatever UV protection was left. That's why a new UV coating isn't optional: without it, a freshly polished lens yellows again quickly. It's also why store kits often don't last. We finish with a ceramic headlight UV coating.</p>
-<p class="takeaway"><b>Why it matters for your car:</b> clear lenses put the light on the road. Three polishing stages, a ceramic UV coating, and a 1-year clarity warranty — or Headlight restoration, Grade III: a sprayed 2K urethane clear coat (the same kind of finish as the factory hardcoat) with a 3-year clarity warranty. <a href="../headlight-restoration/">Headlight restoration</a>.</p>
+<p class="takeaway"><b>Why it matters for your car:</b> clear lenses put the light on the road. Three polishing stages, a ceramic UV coating, and a 1-year clarity warranty — or Headlight restoration, Grade III: a sprayed 2K urethane clear coat (a durable automotive clear coat) with a 3-year clarity warranty. <a href="../headlight-restoration/">Headlight restoration</a>.</p>
 </div>
 </article>
 </div>

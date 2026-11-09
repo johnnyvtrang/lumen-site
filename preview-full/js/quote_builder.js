@@ -74,7 +74,7 @@ dually:'Two extra wheels and tires.',
 lightbar:'Restored with this detail at the bundled price.',
 hl_polish:'Headlight restoration, Grade I: a light-haze lens polish, at the with-a-detail price. 1-year clarity warranty.',
 hl_restore:'Headlight restoration, Grade II: full restoration — sanded, polished and coated — at the with-a-detail price. 1-year clarity warranty.',
-hl_restore_max:'Headlight restoration, Grade III: full restoration with a sprayed 2K urethane clear coat, the same kind of finish as the factory hardcoat. Garage required (it cures there); 3-year clarity warranty.',
+hl_restore_max:'Headlight restoration, Grade III: full restoration with a sprayed 2K urethane clear coat, a durable automotive clear coat. Garage required (it cures there); 3-year clarity warranty.',
 radiance_plus_e:"A spray coating on the paint after the decon, maker-rated up to 12–18 months.",
 panel_coat:'Dash, door panels, console and interior plastic & vinyl trim coated after the dressings come off: a natural matte finish, maker-rated 4–12 months. Screens, the steering wheel and pedals are left uncoated.',
 leather_fabric_coat:'Leather coated on the leather, a fabric & Alcantara coating on the rest — for interiors with both. Needs dry fabric, so never the same day as shampoo or extraction.',
@@ -165,12 +165,12 @@ opt('reg','Mobile — Regional zone',{fee:'reg'}),opt('studio','Studio drop-off'
 const STRINGS={
 mold:'Mold, flood or rodents? Text photos — those start with an assessment.', 
 quotedInterior:'Interior: quoted from photos (12–15-passenger and camper interiors vary too much to price online).',
-w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), with the same price and protection steps. Undercarriage flushes are available year-round on above-freezing days, over a containment mat that captures the run-off.',
+w1:'Winter: every service is available. If rain, snow, freezing or wind would hurt the result, we move the visit, with no fee. Undercarriage flushes run on above-freezing days, over a containment mat that captures the run-off.',
 coating:"Coated by another shop? Tell us who installed it — some coating warranties also need the installer's annual inspection.",
 neglectPhotos:'Long-neglected interiors are confirmed from photos.',
 leatherIncluded:"Leather stains come out in this level's leather deep-clean.",
 trimIncluded:'Faded trim is restored in this level — light or heavy.',
-waterReseal:'Water spots come off in the Decon & Reseal step.',
+waterReseal:'Water spots come off in the Annual Coating Service decon.',
 etched:'Etched rings on the paint need machine polishing (paint correction: Grades I–II on-site; Grade III drop-off only, up to 2 days) — quoted.',
 suede:'Genuine suede, nubuck or aniline leather: quoted after a test spot — water can mark these materials.',
 singleStage:'Classic or single-stage paint: quoted after a test spot — we check how the paint reacts before any polish or protection goes on.',
@@ -180,7 +180,7 @@ emblemIncluded:'Included in chrome trim polish',
 glassTitle:'Glass ceramic coating',
 quickReplaced:'Replaced by the longer-rated coating', 
 fabricWet:'Not the same day as shampoo or extraction: the fabric must be dry. Book it as a return visit.',
-rplusTitle:'Halo (optional) — longer-lasting protection',
+rplusTitle:'Halo (optional)', 
 rplusSubE:'Outside: a spray coating, maker-rated up to 12–18 months.',
 rplusSubI:'Inside: interior panels, a seat coating (fabric & Alcantara, leather, or leather + Alcantara/fabric), or both.', 
 bestGuess:"Not sure you picked right? Book your best guess. At the walkaround — before we start — we'll take off anything you don't need, and nothing gets added without your OK.",
@@ -459,7 +459,7 @@ if(a.outside==='neglect'&&!prot&&elv<2)
 note('neglect_outside',`Months without a wash usually need the clay treatment, which is part of ${LEVEL_FULL[2]}. We'll confirm at the walkaround.`);
 const swap=P.pfPrice('reseal',e,i)-P.pfPrice('refresh',e,i);
 if(a.outside==='neglect'&&kind==='pfull'&&a.water==='none')
-note('pf_neglect','Months without a wash usually need the full decon (Decon & Reseal). We\'ll confirm at the walkaround.');
+note('pf_neglect','Months without a wash usually need the full decon (Annual Coating Service). We\'ll confirm at the walkaround.');
 if(a.water!=='none'){
 if(kind==='reseal')note('water_reseal',STRINGS.waterReseal+(a.water==='heavy'?' '+STRINGS.etched:''));
 else{
@@ -476,7 +476,6 @@ why:STRINGS.trimIncludedLine,level:elv,source:'answer',opt:null,included:true,in
 }
 if(a.trim==='some'){
 if(trimIn)note('trim_included',STRINGS.trimIncluded);
-else if(!prot)note('trim_crp',`Lightly faded trim is revived at ${LEVEL_FULL[2]}.`);
 }
 const sp=a.special;
 if(has(sp,'chrome_heavy'))addSpecial('chrome_heavy');else if(has(sp,'chrome_light'))addSpecial('chrome_trim');
@@ -727,7 +726,7 @@ const finish={ceramic:'ceramic coating',ppf:'paint protection film',wrap:'wrap o
 if(kind==='refresh')return a.protected==='ceramic'?'Finish-safe hand wash, then a ceramic topper (included) that refreshes the slickness and beading and takes the wear instead of the coating.':`Finish-safe hand wash and a topper matched to your ${finish}.`;
 if(kind==='reseal')return a.outside==='neglect'?`Months without a wash need the full decon, then a fresh ceramic sealant topper over your ${finish}.`
 :`Full chemical decon and a fresh ceramic sealant topper over your ${finish}.`;
-return`Finish-safe Refresh Wash outside for your ${finish}, plus an Interior ${LEVEL_FULL[2]}.`;
+return`Finish-safe Coated Care Wash outside for your ${finish}, plus an Interior ${LEVEL_FULL[2]}.`;
 }
 if(level===0)return WHY_LEVEL.clean[pt];
 if(level===1)return explicit?cap(WHY_LEVEL.cp[pt]):'Based on your answers: '+WHY_LEVEL.cp[pt];
@@ -986,16 +985,17 @@ opt('5','4–5 years or more')]),
 ADV('use','multi','How is it driven and kept?',[opt('daily','Daily commuter'),opt('salt','Winter salt roads'),opt('offroad','Off-road or trails'),
 opt('work','Worksite or job truck'),opt('garage','Garage-kept')],{help:'Choose all that fit.'}),
 ADV('look','single','What do you care about most?',[opt('easy','Easier to clean & maintain'),opt('gloss','Gloss & depth'),
-opt('beading','Extreme water beading'),opt('budget','Budget-friendly'),opt('any','No strong preference')]),
-ADV('paint','single','How does the paint look today?',[opt('great','Looks great'),opt('light','Light swirls'),opt('heavy','Heavy swirls or scratches')],
-{help:'Look in direct sun or under a flashlight. Every panel is paint-gauged before we polish.'}),
+opt('beading','Strong water beading'),opt('budget','Budget-friendly'),opt('any','No strong preference')]), 
+ADV('paint','single','How does the paint look today?',[opt('new','New, freshly painted or already corrected'),opt('great','Looks great'),opt('light','Light swirls'),
+opt('heavy','Heavy swirls or scratches')],
+{help:'Look in direct sun or under a flashlight. Correction is optional; if you choose it, every panel is paint-gauged before we polish.'}),
 ADV('glass','single','Glass',[opt('none','No glass coating'),opt('ws','Windshield'),opt('all','All glass')]),
 ADV('wheels','single','Wheels',[opt('none','No wheel coating'),opt('faces','Wheel faces'),opt('off','Faces + barrels (wheels off)')]),
 ADV('more','multi','Also coat',[opt('trim','Black trim'),opt('tires','Tires'),opt('calipers','Brake calipers')]),
 ADV('interior','multi','Interior coatings (Halo inside)',[opt('leather','Leather'),opt('fabric','Fabric & Alcantara')]),
 ];
 const ADV_VALUES={finish:['gloss','matte','vinyl','ppf'],years:['1','3','5'],use:['daily','salt','offroad','work','garage'],
-look:['beading','gloss','easy','budget','any'],paint:['great','light','heavy'],glass:['none','ws','all'],wheels:['none','faces','off'],
+look:['beading','gloss','easy','budget','any'],paint:['new','great','light','heavy'],glass:['none','ws','all'],wheels:['none','faces','off'],
 more:['trim','tires','calipers'],interior:['leather','fabric'],level:['auto','rplus','essential','signature','reserve','film'],
 grade:['auto','none','g1','g2','g3'],prepay:['no','yes'],flush:['no','yes'],garage:['','yes','no','unsure']};
 const advisorDefaults=()=>({finish:'gloss',years:'3',use:[],look:'any',paint:'light',glass:'none',wheels:'none',more:[],interior:[],
@@ -1004,8 +1004,8 @@ const HARSH={salt:'winter salt',offroad:'trails',work:'job sites'};
 const EURO= /^(Alfa Romeo|Aston Martin|Audi|Bentley|BMW|Ferrari|Jaguar|Lamborghini|Land Rover|Lotus|Maserati|McLaren|Mercedes|MINI|Mini|Polestar|Porsche|Rolls-Royce|Volkswagen|Volvo)\b/;
 const FIN_NAME={gloss:'Gloss paint',matte:'Matte/satin',vinyl:'Vinyl wrap',ppf:'PPF'};
 const YRS_NAME={1:'~1 year',3:'2–3 years',5:'4–5+ years'};
-const LOOK_NAME={beading:'max beading',gloss:'gloss & depth',easy:'easy washing',budget:'budget-friendly'};
-const PAINT_NAME={great:'paint looks great',light:'light swirls',heavy:'heavy swirls'};
+const LOOK_NAME={beading:'strong beading',gloss:'gloss & depth',easy:'easy washing',budget:'budget-friendly'};
+const PAINT_NAME={new:'new/corrected paint',great:'paint looks great',light:'light swirls',heavy:'heavy swirls'};
 function advisorAnswers(ans){
 const a0=ans||{},d=advisorDefaults(),a={};
 Object.keys(d).forEach(k=>{
@@ -1025,13 +1025,13 @@ if(!gloss)rec='film';
 else if(a.years==='1')rec='rplus';
 else if(a.years==='5'||harsh.length)rec='reserve';
 else rec=a.look==='gloss'||garageKept?'signature':'essential';
-const recGrade=gloss?{great:'g1',light:'g2',heavy:'g3'}[a.paint]:null;
+const recGrade=gloss?({great:'g1',light:'g2',heavy:'g3'}[a.paint]||null):null; 
 const allowed=gloss?['rplus','essential','signature','reserve']:['film'];
 const level=a.level!=='auto'&&has(allowed,a.level)?a.level:rec;
 const coat=level!=='rplus';
 let grade=null;
 if(gloss){
-if(a.grade==='none')grade=coat?recGrade:null;
+if(a.grade==='none')grade=null;
 else if(a.grade!=='auto')grade=a.grade;
 else grade=coat?recGrade:null;
 }
@@ -1047,30 +1047,33 @@ const nm= /coating$/.test(t.label)?t.label:`${t.label} coating`;
 line('coat:'+level,`${nm} — ${/^up to/.test(t.rating)?'maker-rated '+t.rating:t.rating}`,tierPrice(level),{from:!!t.from,short:nm});
 }
 if(grade)line(grade,`Paint correction ${M.correction[grade].label}`,P.correction(grade,e),{from:true,short:`${M.correction[grade].short} correction`});
-if(gloss)why.push(level==='rplus'?`Gloss paint: an Exterior ${LEVEL_FULL[2]} (decon, clay, trim restored), then the Halo spray coating by hand.`:'Gloss paint: polished first — a coating locks in whatever is under it — then coated.');
+if(gloss)why.push(level==='rplus'?`Gloss paint: an Exterior ${LEVEL_FULL[2]} (decon, clay, trim restored), then the Halo spray coating by hand.`:grade?'Gloss paint: corrected at the grade below, then the full prep (wash, iron, tar and mineral decon, clay, panel wipe) and the coating.'
+:'Gloss paint, no correction: the full prep (a thorough wash, iron, tar and mineral decon, clay, a panel wipe), then the coating.');
 else why.push({matte:'Matte or satin paint: no polishing (it would add shine); a matte-safe coating.',
 vinyl:'Vinyl wrap: no polishing; a film-safe coating (a matte-safe one on matte or satin wrap).',
 ppf:'PPF: no polishing; a film-safe coating over the film.'}[a.finish]+' Decon wash included.');
 if(a.years==='1')why.push(gloss?"About a year: a multi-year coating won't pay for itself — Halo (a spray coating, maker-rated up to 12–18 months) covers the time you'll own it."
-:'About a year: the film coating is still the only coating we put on these finishes; between visits, the Refresh Wash keeps it finish-safe.');
-if(!gloss&&a.years!=='1')why.push(`${YRS_NAME[a.years]}: film coatings are rated by their makers at about two years (up to 24 months to two years); the Decon & Reseal tops them up.`);
+:'About a year: the film coating is still the only coating we put on these finishes; between visits, the Coated Care Wash keeps it finish-safe.');
+if(!gloss&&a.years!=='1')why.push(`${YRS_NAME[a.years]}: film coatings are maker-rated up to 24 months; the Annual Coating Service tops them up.`);
 if(gloss&&a.years==='3')why.push('2–3 years: Essential (maker-rated up to 24 months) or Signature (maker-rated up to 36 months).');
-if(gloss&&a.years==='5')why.push('4–5 years or more: Reserve — maker-rated up to 50 months to five years, the longest maker ratings we can offer.');
+if(gloss&&a.years==='5')why.push('4–5 years or more: Reserve — maker-rated up to 50 months or up to five years, depending on the option, the longest maker ratings we can offer.');
 if(harsh.length&&gloss&&a.years!=='1')why.push(`${cap(harsh.map(x=>HARSH[x]).join(', ').replace(/, ([^,]*)$/,' and $1'))}: Reserve's base and top layers take chemical and abrasion wear best.`);
 if(garageKept&&!harsh.length)why.push("Garage-kept: less sun and weather, so Signature's gloss-focused single layer is plenty.");
 if(!harsh.length&&!garageKept&&has(a.use,'daily'))why.push('Daily commuter: any level works; the care card keeps it working.');
 const stepUp=()=>''; 
 if(gloss&&a.years!=='1'){
-if(a.look==='beading')why.push(level==='reserve'?'Extreme beading: Reserve beads hardest.':`Extreme beading: Reserve beads hardest${stepUp()}.`);
+if(a.look==='beading')why.push(level==='reserve'?'Strong beading: Reserve beads hardest.':`Strong beading: Reserve beads hardest${stepUp()}.`);
 if(a.look==='gloss')why.push('Gloss & depth: Signature is the gloss-focused layer.');
 if(a.look==='budget')why.push(level==='essential'?'Budget-friendly: Essential is the lowest-priced paint coating, maker-rated up to 24 months.'
 :'Budget-friendly: Essential is the lowest-priced paint coating (maker-rated up to 24 months); choose it under Coating if it covers how long you\'ll keep the car.');
 if(a.look==='easy')why.push(level==='reserve'?"Easier to clean: Reserve's slick top layer lets dirt rinse off.":`Easier to clean: every level sheds water and dirt; Reserve's slick top layer lets it rinse off most readily${stepUp()}.`);
 }
-if(gloss&&grade)why.push({great:'Paint looks great: Grade I, a one-step polish (gloss enhancement).',light:'Light swirls: Grade II, a one-step compound & polish.',
+if(gloss&&grade)why.push({new:'New or already corrected paint: correction usually isn\'t needed.',great:'Paint looks great: Grade I, a one-step polish (gloss enhancement).',light:'Light swirls: Grade II, a one-step compound & polish.',
 heavy:'Heavy swirls or scratches: Grade III, two steps — compound, then polish.'}[a.paint]+(grade!==recGrade?` You chose ${M.correction[grade].short}.`:''));
-if(gloss&&!grade)why.push(`Correction is optional with Halo: ${M.correction[recGrade].short} from ${money(P.correction(recGrade,e))} if you want the swirls out first.`);
+if(gloss&&!grade)why.push(a.paint==='new'?'New, freshly painted or already corrected paint: no correction needed before the coating.'
+:'No correction: a coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them.');
 if(level!==rec)why.push(`You chose ${level==='rplus'?'Halo':C[level].label}; ${rec==='rplus'?'Halo':C[rec].label} is the likely fit for your answers (confirmed at your free inspection).`);
+if(level==='rplus')why.push(`Halo is available with any detail, at the same price at every level; it's shown here with an Exterior ${LEVEL_FULL[2]}.`);
 const wheelsOn=a.wheels!=='none';
 const complete=a.glass==='all'&&wheelsOn&&has(a.more,'trim')&&has(a.more,'tires');
 if(complete)line('coat:complete','Complete: all glass, trim, wheel faces & tires (longer-rated coatings)',P.coating('complete',e),
@@ -1108,21 +1111,23 @@ const deeper=gi>=0&&gi<P.CORR_KEYS.length-1?P.correction(P.CORR_KEYS[gi+1],e)-P.
 const dropOnly=!!(grade&&M.correction[grade].dropoff_only);
 if(dropOnly)notes.push(STRINGS.g3Note);
 const needsGarage=(coat||a.wheels==='off')&&!dropOnly;
-if(needsGarage&&a.garage==='no')notes.push("Paint coatings and wheels-off work need a garage we can work in. Text us anyway — glass, wheel-face and tire coatings don't need one.");
+if(needsGarage&&a.garage==='no')notes.push(a.wheels==='off'?"No garage: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't. Wheels-off work needs a garage."
+:"No garage is fine: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't.");
 return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,levelLabel:level==='rplus'?'Halo':C[level].label,
 lines,why,notes,suggest,total,low:total,high:total+deeper,from:lines.some(x=>x.from),needsGarage,
 where:dropOnly?'dropoff':'mobile',mobile:dropOnly?{enabled:false,reason:STRINGS.g3Mobile}:{enabled:true,reason:null},
 days:dropOnly?M.correction[grade].max_days:null,timeNote:dropOnly?STRINGS.g3Time:null,
-care:coat?{included:'A 30-day check-in and a care card, included',annual:reseal,prepay:P.carePrepay(e)}:null,
+care:coat?{included:'A 30-day check-in, a care card and a free yearly inspection (it keeps the warranty), included',annual:reseal,prepay:P.carePrepay(e)}:null,
 id:'C-'+hashId(JSON.stringify([[v.make,v.model,v.year,v.variant,e].map(x=>(x==null?'':String(x))),a]))};
 }
 function coatingText(plan,vehicle){
 const p=plan,v=vehicle||p.vehicle||{},a=p.answers;
 const vl=clip(`${vehicleName(v)}${v.typeLabel||p.typeLabel?` (${String(v.typeLabel||p.typeLabel).replace(/\s*\([^)]*\)\s*$/,'')})`:''}`,70);
 const use=a.use.map(x=>({daily:'daily',salt:'salt',offroad:'trails',work:'job site',garage:'garage-kept'})[x]).join(', ');
-const ctx=[FIN_NAME[a.finish],YRS_NAME[a.years],use,LOOK_NAME[a.look],a.finish==='gloss'?PAINT_NAME[a.paint]:null].filter(Boolean).join(' · ');
+const ctx=[FIN_NAME[a.finish],YRS_NAME[a.years],use,LOOK_NAME[a.look],a.finish==='gloss'?PAINT_NAME[a.paint]:null,
+a.finish==='gloss'&&p.coat&&!p.grade?'no correction':null].filter(Boolean).join(' · ');
 const est=p.high>p.low?`${money(p.low)}–${money(p.high)}`:`${p.from?'from ':''}${money(p.low)}`;
-const care=p.care?`Coating Care: 30-day check-in & care card included${a.prepay==='yes'?'':`; annual service ${money(p.care.annual)}`}`:null;
+const care=p.care?`Coating Care: 30-day check-in, care card & free yearly inspection included${a.prepay==='yes'?'':`; optional annual service ${money(p.care.annual)}`}`:null;
 const garage=p.where==='dropoff'?`Where: drop-off (Grade III) · ${p.timeNote.toLowerCase()}`
 :p.needsGarage?`Garage: ${a.garage==='yes'?'yes':a.garage==='no'?'no':a.garage==='unsure'?'not sure':'not answered'}`:null;
 const build=(n,short)=>{

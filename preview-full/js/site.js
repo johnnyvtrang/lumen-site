@@ -112,13 +112,13 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Renew one at a time ('+avg+').';
+if(k==='pf')return lead+'a Coated Care Wash + Interior Renew one at a time ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
 }
 function planSave(el,k,f,V){
 const dd=half(P.planOneOff(k,f,V.e,V.i)-P.plan(k,f,V.e,V.i));
 hide(el,V.q||dd<=0);
-if(k==='std')return'Save '+Math.round(100*M.plans.std.save_pct[f])+'% per visit';
+if(k==='std')return'Save at least '+Math.round(100*M.plans.std.save_pct[f])+'% per visit'; 
 return'Save '+P.planSavePct(k,f,V.e,V.i)+'% per visit'; 
 }
 function render(){

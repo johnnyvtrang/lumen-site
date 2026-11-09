@@ -457,7 +457,7 @@ if(k==='riders')st.answers=B.applyRiders(a);
 save();paint();
 }
 function stepR(){
-return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-rplus"></div><div id="q-lines"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-best" id="q-best">${esc(B.STRINGS.bestGuess)}</p><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
+return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-lines"></div><div id="q-rplus"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-best" id="q-best">${esc(B.STRINGS.bestGuess)}</p><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
 }
 const line=(l,w,amt,cls)=>`<div class="q-line${cls?' '+cls:''}"><p><span>${esc(l)}</span>${w?`<small>${esc(w)}</small>`:''}</p><b>${amt}</b></div>`;
 const serviceLabel=r=>B.serviceLabel(r); 
@@ -501,7 +501,7 @@ if(notes.length)L+=`<ul class="q-notes">${notes.map(n=>`<li>${esc(n.text)}</li>`
 if(r.actions.length)L+=`<p class="q-ra">${r.actions.map(x=>`<button type="button" class="btn btn-ghost btn-sm" data-act="lvl" data-level="${x.level}">${esc(x.label)}</button>`).join('')}</p>`;
 $('#q-lines',root).innerHTML=L;
 const rx=r.extras.filter(x=>x.group==='rplus'),nx=r.extras.filter(x=>x.group!=='rplus');
-$('#q-rplus',root).innerHTML=rx.length&&!quoted?`<fieldset class="q-rplus"><legend class="q-rplus-h">${esc(B.STRINGS.rplusTitle)}</legend>${rx.some(x=>x.key==='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubE)}</p>`:''}${rx.some(x=>x.key!=='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubI)}</p>`:''}${rx.map(x=>xHTML(x)).join('')}</fieldset>`:'';
+$('#q-rplus',root).innerHTML=rx.length&&!quoted?`<fieldset class="q-xgf q-rplus-plain"><legend class="q-xg">${esc(B.STRINGS.rplusTitle)}</legend>${rx.some(x=>x.key==='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubE)}</p>`:''}${rx.some(x=>x.key!=='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubI)}</p>`:''}${rx.map(x=>xHTML(x)).join('')}</fieldset>`:'';
 const ex=$('#q-ex',root);
 ex.hidden=!nx.length;
 $('summary',ex).textContent=`Add an extra (${nx.length})`;
@@ -776,14 +776,15 @@ c.input.focus();
 if(!DB)loadDB().catch(()=>{});
 }
 const adv=D.getElementById('advisor'),CKEY='lumen_coat_v1';
-let ca=null,caText='';
+let ca=null,caText='',caTouched=false;
 if(adv&&B.coatingPlan){
-const sv=sGet(CKEY);
-ca=Object.assign(B.advisorDefaults(),sv&&sv.v===1&&Date.now()-(sv.savedAt||0)<MAX_AGE?sv.answers:{});
+const sv=sGet(CKEY),fresh=sv&&sv.v===1&&Date.now()-(sv.savedAt||0)<MAX_AGE;
+ca=Object.assign(B.advisorDefaults(),fresh?sv.answers:{});
+caTouched=!!(fresh&&sv.touched);
 }
-const caSave=()=>sSet(CKEY,{v:1,savedAt:Date.now(),answers:ca});
+const caSave=()=>sSet(CKEY,{v:1,savedAt:Date.now(),answers:ca,touched:caTouched});
 const caVeh=()=>st.vehicle||LS.vehicle||null;
-const NUMS=['1','2','3','4','5','6','6','6','7'];
+const NUMS=['1','2','3','4','5','6','7','8','9']; 
 function caFs(q,plan,deco,n){
 const multi=q.type==='multi',val=ca[q.key],nm='ca-'+q.key;
 const on=x=>(multi?(val||[]).indexOf(x)>=0:String(val)===x);
@@ -812,20 +813,22 @@ return h;
 const lvls=gloss?['rplus','essential','signature','reserve']:['film'];
 const lvPrice=k=>(k==='rplus'?P.price('e',2,e)+P.addon('radiance_plus_e',e).price:P.coating(k,e));
 const lvName=k=>(k==='rplus'?'Halo':M.coatings.tiers[k].label.replace(/ coating$/,''));
-const rec='<span class="q-rec">Likely fit</span>';
+const rec=caTouched?'<span class="q-rec">Likely fit</span>':'';
 const seg=(name,legend,list,cur,recK,price,label)=>`<p class="q-segl">${esc(legend)}</p><fieldset class="seg q-seg ca-seg"><legend class="sr-only">${esc(legend)}</legend>${list.map(k=>`<label class="seg-opt"><input type="radio" name="${name}" value="${k}"${k===cur?' checked':''}><span class="q-sl">${esc(label(k))}</span> <b>${price(k)}</b>${k===recK?rec:''}</label>`).join('')}</fieldset>`;
-let out=`<p class="label">A likely fit — confirmed at your free inspection</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Halo — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`;
-out+=`<ul class="ca-why">${plan.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`;
+let out=caTouched?`<p class="label">A likely fit — confirmed at your free inspection</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Halo — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`
++`<ul class="ca-why">${plan.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`
+:`<p class="label">Answer the questions above to see a likely fit</p><p class="q-help">The estimate below follows the choices shown; change any of them.</p>`;
 if(lvls.length>1)out+=seg('ca-level','Coating',lvls,plan.level,plan.rec,k=>money(lvPrice(k)),lvName);
 if(gloss){
-const gl=(plan.level==='rplus'?['none']:[]).concat(P.CORR_KEYS);
-out+=seg('ca-grade','Paint correction · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':plan.recGrade,
-k=>(k==='none'?'':'from '+money(P.correction(k,e))),k=>(k==='none'?'None':M.correction[k].short));
+const gl=['none'].concat(P.CORR_KEYS);
+out+=seg('ca-grade','Paint correction (optional) · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':(plan.recGrade||'none'),
+k=>(k==='none'?'':'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
+out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe.</p>`;
 out+=`<p class="q-help ca-g3">Grade III: ${esc(M.correction.g3.time_note.replace(/^Up/,'up'))}.</p>`;
 }
 out+=`<div class="ca-lines">${plan.lines.map(x=>line(x.label,x.saving?`${money(x.saving+x.price)} if coated one by one`:x.from?'From — confirmed after inspection and a written quote':'',x.quoted?'Quoted':(x.from?'from ':'')+money(x.price),x===plan.lines[0]?'q-main':'')).join('')}</div>`;
 if(plan.care){
-out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in and a care card. The Annual Coating Service (a Decon &amp; Reseal, ${money(plan.care.annual)}) keeps the warranty — <a href="${D.getElementById('coating-care')?'':(CFG.root||'../')+'paint-correction-ceramic-coating/'}#coating-care">how it works</a>.</p>`+
+out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in, a care card and a free yearly inspection that keeps the warranty. The Annual Coating Service (${money(plan.care.annual)}) is optional, there if it needs a deep clean — <a href="${D.getElementById('coating-care')?'':(CFG.root||'../')+'paint-correction-ceramic-coating/'}#coating-care">how it works</a>.</p>`+
 `<label class="q-opt ca-pre"><input type="checkbox" name="ca-prepay" value="yes"${ca.prepay==='yes'?' checked':''}><span>Prepay two annual services at installation (about 12% off) <b class="q-amt">${money(plan.care.prepay)}</b></span></label></div>`;
 }
 if(plan.notes.length)out+=`<ul class="q-notes">${plan.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`;
@@ -837,7 +840,7 @@ if(plan.where==='dropoff')out+=`<fieldset class="q-q ca-where"><legend>Where</le
 `<p class="q-xr ca-mob-r" id="ca-mob-r">${esc(plan.mobile.reason)}</p>`+
 `<label class="q-opt"><input type="radio" name="ca-where" value="dropoff" checked><span>Drop-off</span></label></div>`+
 `<p class="q-hrs ca-days" id="ca-days">${esc(plan.timeNote)}</p></fieldset>`;
-if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage we can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">Paint coatings need one, so the coating goes on and cures out of the sun, wind and dust.</p></div>`;
+if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage we can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">It helps us plan the day: we apply outdoors when the coating's maker allows it and the day's conditions fit, or in a garage or covered space when they don't.</p></div>`;
 const text=B.coatingText(plan,v?vText(v):null),fine=mq('(pointer:fine)');
 const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Lumen</a>`
 :`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Lumen</a>`;
@@ -863,6 +866,7 @@ else if(q)ca[k]=t.value;
 else if(k==='level'||k==='grade'||k==='garage')ca[k]=t.value;
 else if(k==='prepay'||k==='flush')ca[k]=t.checked?'yes':'no';
 else if(k==='sw')ca.wheels=t.checked?(ca.wheels==='none'?'faces':ca.wheels):'none';
+if(q||k==='level'||k==='grade')caTouched=true;
 if(k==='finish'||k==='years'){ca.level='auto';ca.grade='auto';}
 if(k==='paint')ca.grade='auto';
 caSave();caPaint();
@@ -874,7 +878,7 @@ if(!b||!adv.contains(b))return;
 if(b.hasAttribute('data-ca-change')){const pk=$('#ca-pk',adv);if(pk.hidden)mountPicker(pk);return;}
 const k=b.dataset.ca,v=caVeh(),plan=B.coatingPlan(ca,v,P);
 if(k==='complete')Object.assign(ca,{glass:'all',wheels:ca.wheels==='none'?'faces':ca.wheels,more:ca.more.filter(y=>y!=='trim'&&y!=='tires').concat('trim','tires')});
-else if(k==='reset'){ca=B.advisorDefaults();sDel(CKEY);caPaint();const f=$('input[name="ca-finish"]',adv);if(f)f.focus();return;}
+else if(k==='reset'){ca=B.advisorDefaults();caTouched=false;sDel(CKEY);caPaint();const f=$('input[name="ca-finish"]',adv);if(f)f.focus();return;}
 else if(k==='send'){lt('coat_plan_send');return;}
 else if(k==='copy'){
 const t=caText,done=ok=>{b.textContent=ok?'Copied':'Copy my plan';if(!ok)$('#ca-cp',adv).innerHTML=`<label class="q-lbl" for="ca-cpt">Copy this text</label><textarea id="ca-cpt" class="q-in q-cpt" rows="8" readonly>${esc(t)}</textarea>`;};
