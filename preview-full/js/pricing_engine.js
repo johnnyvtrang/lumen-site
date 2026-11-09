@@ -125,6 +125,10 @@ const part=(ref,e)=>{const n=ref.indexOf(':'),kind=ref.slice(0,n),key=ref.slice(
 if(kind==='coat')return coating(key,e);if(kind==='addon')return addon(key,e).price;if(kind==='gw')return glassWheels(key,e);throw new Error('Unknown part '+ref);};
 const coatingParts=(kind,e)=>(COAT[kind].parts||[]).reduce((s,r)=>s+part(r,e),0);
 const coatingSaving=(kind,e)=>coatingParts(kind,e)-coating(kind,e);
+const PREP=(M.coatings&&M.coatings.prep)||null;
+const prepApplies=kind=>!!(PREP&&(PREP.applies_to||[]).indexOf(kind)>=0);
+const coatingPrep=e=>(PREP?round5(PREP.anchor*(0.1+0.9*T(e).paint)):0);
+const coatingOnly=(kind,e)=>coating(kind,e)+(prepApplies(kind)?coatingPrep(e):0);
 const carePrepay=e=>{const c=CARE.prepay2;return round9(c.services*pfPrice(c.of.replace(/^pf_/,''),e)*(1-c.off));};
 const CORR_KEYS=Object.keys(M.correction).filter(k=>M.correction[k]&&typeof M.correction[k]==='object'); 
 const cycle=(e,i)=>(2*price('f',0,e,i)+price('f',1,e,i)) / 3;
@@ -166,6 +170,8 @@ console.warn('Lumen pricing: Standard Care saving does not grow with frequency')
 for(const k in M.glass_wheels.items)if(glassWheels(k,'sedan')!==M.glass_wheels.items[k].base)console.warn('Lumen pricing: glass/wheel sedan mismatch',k);
 for(const k in COAT)if(!COAT[k].parts&&coating(k,'sedan')!==COAT[k].anchor)console.warn('Lumen pricing: coating tier sedan mismatch',k);
 if(CORR_KEYS.map(k=>correction(k,'sedan')).join()!=='399,549,799')console.warn('Lumen pricing: correction grades are not 399/549/799'); 
+if(PREP&&(coatingPrep('sedan')!==PREP.anchor||['essential','signature','reserve'].map(k=>coatingOnly(k,'sedan')).join()!=='675,775,875'))
+console.warn('Lumen pricing: coating prep is not $175 / coating-only 675/775/875 on a sedan');
 if(CARE.prepay2&&carePrepay('sedan')!==349)console.warn('Lumen pricing: Coating Care prepay is not $349 on a sedan');
 if(mixedPrice(2,0,'sedan')!==219||mixedPrice(2,1,'sedan')!==269)console.warn('Lumen pricing: sedan mixed levels are not 219/269'); 
 for(const k of publicTypes())for(let a=0;a<3;a++)for(let b=0;b<3;b++){
@@ -173,7 +179,7 @@ const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,
 if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
 }
 })();
-return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,correction,CORR_KEYS,coating,coatingParts,coatingSaving,carePrepay,plan,planOneOff,planSavePct,
+return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,correction,CORR_KEYS,coating,coatingParts,coatingSaving,coatingPrep,coatingOnly,prepApplies,carePrepay,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};

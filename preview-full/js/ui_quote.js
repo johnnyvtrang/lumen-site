@@ -822,8 +822,8 @@ if(lvls.length>1)out+=seg('ca-level','Coating',lvls,plan.level,plan.rec,k=>money
 if(gloss){
 const gl=['none'].concat(P.CORR_KEYS);
 out+=seg('ca-grade','Paint correction (optional) · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':(plan.recGrade||'none'),
-k=>(k==='none'?'':'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
-out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe.</p>`;
+k=>(k==='none'?(P.prepApplies&&P.prepApplies(plan.level)?'+'+money(P.coatingPrep(e))+' prep':''):'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
+out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe. With no correction, that prep is its own line (${money(P.coatingPrep?P.coatingPrep(e):0)} on ${v?'your vehicle':'a sedan'}); with a correction grade, it's part of the correction visit.</p>`;
 out+=`<p class="q-help ca-g3">Grade III: ${esc(M.correction.g3.time_note.replace(/^Up/,'up'))}.</p>`;
 }
 out+=`<div class="ca-lines">${plan.lines.map(x=>line(x.label,x.saving?`${money(x.saving+x.price)} if coated one by one`:x.from?'From — confirmed after inspection and a written quote':'',x.quoted?'Quoted':(x.from?'from ':'')+money(x.price),x===plan.lines[0]?'q-main':'')).join('')}</div>`;
@@ -834,7 +834,7 @@ out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 3
 if(plan.notes.length)out+=`<ul class="q-notes">${plan.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`;
 const est=plan.high>plan.low?`${money(plan.low)}–${money(plan.high)}`:`${plan.from?'from ':''}${money(plan.low)}`;
 out+=`<div class="q-tot ca-tot" aria-live="polite" aria-atomic="true"><span>Estimate</span> <b id="ca-tot">${est}</b></div><p class="q-hrs">Before tax · your price confirmed after inspection and a written quote${plan.high>plan.low?' (the range runs to one correction grade deeper)':''}.</p>`;
-if(plan.coat)out+=`<p class="q-fine">${CFG.foundingDiscountConfirmed?'Founding customers: 35–40% off the coating itself (not the correction or extras), for before/after photos and your feedback.':'Founding customers: ask about founding pricing on the coating itself (not the correction or extras).'}</p>`;
+if(plan.coat)out+=`<p class="q-fine">${CFG.foundingDiscountConfirmed?'Founding customers: 35–40% off the coating itself (not the prep, correction or extras), for before/after photos and your feedback.':'Founding customers: ask about founding pricing on the coating itself (not the prep, correction or extras).'}</p>`;
 if(plan.where==='dropoff')out+=`<fieldset class="q-q ca-where"><legend>Where</legend><div class="q-opts">`+
 `<label class="q-opt is-off"><input type="radio" name="ca-where" value="mobile" disabled aria-describedby="ca-mob-r"><span>Mobile — your driveway or garage</span></label>`+
 `<p class="q-xr ca-mob-r" id="ca-mob-r">${esc(plan.mobile.reason)}</p>`+

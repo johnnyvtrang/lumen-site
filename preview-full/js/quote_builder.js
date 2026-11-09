@@ -1046,9 +1046,11 @@ const t=C[level];
 const nm= /coating$/.test(t.label)?t.label:`${t.label} coating`;
 line('coat:'+level,`${nm} — ${/^up to/.test(t.rating)?'maker-rated '+t.rating:t.rating}`,tierPrice(level),{from:!!t.from,short:nm});
 }
+const prep=coat&&gloss&&!grade&&P.prepApplies&&P.prepApplies(level);
+if(prep)line('coat_prep',M.coatings.prep.label,P.coatingPrep(e),{short:'Coating prep'});
 if(grade)line(grade,`Paint correction ${M.correction[grade].label}`,P.correction(grade,e),{from:true,short:`${M.correction[grade].short} correction`});
 if(gloss)why.push(level==='rplus'?`Gloss paint: an Exterior ${LEVEL_FULL[2]} (decon, clay, trim restored), then the Halo spray coating by hand.`:grade?'Gloss paint: corrected at the grade below, then the full prep (wash, iron, tar and mineral decon, clay, panel wipe) and the coating.'
-:'Gloss paint, no correction: the full prep (a thorough wash, iron, tar and mineral decon, clay, a panel wipe), then the coating.');
+:'Gloss paint, no correction: the full prep (a thorough wash, iron, tar and mineral decon, clay, a panel wipe; the coating prep line below), then the coating.');
 else why.push({matte:'Matte or satin paint: no polishing (it would add shine); a matte-safe coating.',
 vinyl:'Vinyl wrap: no polishing; a film-safe coating (a matte-safe one on matte or satin wrap).',
 ppf:'PPF: no polishing; a film-safe coating over the film.'}[a.finish]+' Decon wash included.');
@@ -1103,7 +1105,6 @@ if(hiKey&&hiKey!=='leather_coat')notes.push(STRINGS.fabricWet);
 const reseal=P.pfPrice('reseal',e);
 if(coat){
 if(a.prepay==='yes')line('care_prepay','Coating Care: two Annual Coating Services, prepaid (about 12% off)',P.carePrepay(e),{short:'2 annual services prepaid'});
-if(level==='reserve'&&grade==='g3')notes.push('Reserve with Grade III: your first Annual Coating Service is 25% off.');
 }
 const total=lines.reduce((t,x)=>t+x.price,0);
 const gi=grade?P.CORR_KEYS.indexOf(grade):-1;
@@ -1113,7 +1114,7 @@ if(dropOnly)notes.push(STRINGS.g3Note);
 const needsGarage=(coat||a.wheels==='off')&&!dropOnly;
 if(needsGarage&&a.garage==='no')notes.push(a.wheels==='off'?"No garage: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't. Wheels-off work needs a garage."
 :"No garage is fine: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't.");
-return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,levelLabel:level==='rplus'?'Halo':C[level].label,
+return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,prep:!!prep,firstServiceOff:coat&&level==='reserve'&&grade==='g3'?((M.coatings.care||{}).reserve_g3_first_service_off||0):0,levelLabel:level==='rplus'?'Halo':C[level].label,
 lines,why,notes,suggest,total,low:total,high:total+deeper,from:lines.some(x=>x.from),needsGarage,
 where:dropOnly?'dropoff':'mobile',mobile:dropOnly?{enabled:false,reason:STRINGS.g3Mobile}:{enabled:true,reason:null},
 days:dropOnly?M.correction[grade].max_days:null,timeNote:dropOnly?STRINGS.g3Time:null,
