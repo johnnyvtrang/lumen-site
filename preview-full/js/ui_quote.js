@@ -822,8 +822,14 @@ if(lvls.length>1)out+=seg('ca-level','Coating',lvls,plan.level,plan.rec,k=>money
 if(gloss){
 const gl=['none'].concat(P.CORR_KEYS);
 out+=seg('ca-grade','Paint correction (optional) · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':(plan.recGrade||'none'),
-k=>(k==='none'?(P.prepApplies&&P.prepApplies(plan.level)?'+'+money(P.coatingPrep(e))+' prep':''):'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
-out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe. With no correction, that prep is its own line (${money(P.coatingPrep?P.coatingPrep(e):0)} on ${v?'your vehicle':'a sedan'}); with a correction grade, it's part of the correction visit.</p>`;
+k=>(k==='none'?(P.prepApplies&&P.prepApplies(plan.level)?(plan.prepWaived==='detail'?'prep included':'+'+money(P.coatingPrep(e))+' prep'):''):'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
+out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe. With no correction, that prep is its own line (${money(P.coatingPrep?P.coatingPrep(e):0)} on ${v?'your vehicle':'a sedan'}), unless you book an Exterior or Full Radiance detail with the coating (that detail does the prep); with a correction grade, it's part of the correction visit.</p>`;
+if(plan.coat){ 
+const dk=['none','e1','f1','e2','f2'],dName=k=>(k==='none'?'No detail':`${k[0]==='e'?'Exterior':'Full'} ${B.LEVELS[+k[1]]}`);
+out+=seg('ca-detail','A detail the same visit (optional)',dk,plan.detail||'none',null,
+k=>(k==='none'?'':money(P.price(k[0],+k[1],e,k[0]==='f'?(v&&v.itype&&v.itype!=='quote'&&P.types[v.itype]?v.itype:e):undefined))),dName);
+if(plan.prepWaived==='detail')out+=`<p class="q-help ca-prepw"><b>Prep included with your Radiance detail.</b> Its foam, iron and tar decon, clay and wash are the coating prep, so there's no prep line.</p>`;
+}
 out+=`<p class="q-help ca-g3">Grade III: ${esc(M.correction.g3.time_note.replace(/^Up/,'up'))}.</p>`;
 }
 out+=`<div class="ca-lines">${plan.lines.map(x=>line(x.label,x.saving?`${money(x.saving+x.price)} if coated one by one`:x.from?'From — confirmed after inspection and a written quote':'',x.quoted?'Quoted':(x.from?'from ':'')+money(x.price),x===plan.lines[0]?'q-main':'')).join('')}</div>`;
@@ -863,7 +869,7 @@ if(!n||n.indexOf('ca-')!==0)return;
 const k=n.slice(3),q=B.ADVISOR.find(x=>x.key===k);
 if(q&&q.type==='multi')ca[k]=$$(`input[name="${n}"]:checked`,adv).map(x=>x.value);
 else if(q)ca[k]=t.value;
-else if(k==='level'||k==='grade'||k==='garage')ca[k]=t.value;
+else if(k==='level'||k==='grade'||k==='garage'||k==='detail')ca[k]=t.value;
 else if(k==='prepay'||k==='flush')ca[k]=t.checked?'yes':'no';
 else if(k==='sw')ca.wheels=t.checked?(ca.wheels==='none'?'faces':ca.wheels):'none';
 if(q||k==='level'||k==='grade')caTouched=true;

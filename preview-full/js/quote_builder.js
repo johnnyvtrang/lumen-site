@@ -997,9 +997,10 @@ ADV('interior','multi','Interior coatings (Halo inside)',[opt('leather','Leather
 const ADV_VALUES={finish:['gloss','matte','vinyl','ppf'],years:['1','3','5'],use:['daily','salt','offroad','work','garage'],
 look:['beading','gloss','easy','budget','any'],paint:['new','great','light','heavy'],glass:['none','ws','all'],wheels:['none','faces','off'],
 more:['trim','tires','calipers'],interior:['leather','fabric'],level:['auto','rplus','essential','signature','reserve','film'],
-grade:['auto','none','g1','g2','g3'],prepay:['no','yes'],flush:['no','yes'],garage:['','yes','no','unsure']};
+grade:['auto','none','g1','g2','g3'],prepay:['no','yes'],flush:['no','yes'],garage:['','yes','no','unsure'],
+detail:['none','e1','f1','e2','f2']}; 
 const advisorDefaults=()=>({finish:'gloss',years:'3',use:[],look:'any',paint:'light',glass:'none',wheels:'none',more:[],interior:[],
-level:'auto',grade:'auto',prepay:'no',flush:'no',garage:''});
+level:'auto',grade:'auto',prepay:'no',flush:'no',garage:'',detail:'none'});
 const HARSH={salt:'winter salt',offroad:'trails',work:'job sites'};
 const EURO= /^(Alfa Romeo|Aston Martin|Audi|Bentley|BMW|Ferrari|Jaguar|Lamborghini|Land Rover|Lotus|Maserati|McLaren|Mercedes|MINI|Mini|Polestar|Porsche|Rolls-Royce|Volkswagen|Volvo)\b/;
 const FIN_NAME={gloss:'Gloss paint',matte:'Matte/satin',vinyl:'Vinyl wrap',ppf:'PPF'};
@@ -1046,10 +1047,17 @@ const t=C[level];
 const nm= /coating$/.test(t.label)?t.label:`${t.label} coating`;
 line('coat:'+level,`${nm} — ${/^up to/.test(t.rating)?'maker-rated '+t.rating:t.rating}`,tierPrice(level),{from:!!t.from,short:nm});
 }
-const prep=coat&&gloss&&!grade&&P.prepApplies&&P.prepApplies(level);
+const detail=coat&&gloss&&a.detail!=='none'?a.detail:null;
+const prep=coat&&gloss&&(P.prepDue?P.prepDue(level,grade,detail):!grade&&P.prepApplies&&P.prepApplies(level));
+const prepWaived=coat&&gloss&&!prep&&P.prepApplies&&P.prepApplies(level)&&P.prepWaivedBy?P.prepWaivedBy(grade,detail):null;
 if(prep)line('coat_prep',M.coatings.prep.label,P.coatingPrep(e),{short:'Coating prep'});
 if(grade)line(grade,`Paint correction ${M.correction[grade].label}`,P.correction(grade,e),{from:true,short:`${M.correction[grade].short} correction`});
+if(detail){
+const dt=detail[0],dl=+detail[1],dn=`${dt==='e'?'Exterior':'Full'} ${LEVEL_FULL[dl]}`;
+line('detail:'+detail,`${dn} detail, the same visit`,P.price(dt,dl,e,dt==='f'?i:undefined),{short:dn});
+}
 if(gloss)why.push(level==='rplus'?`Gloss paint: an Exterior ${LEVEL_FULL[2]} (decon, clay, trim restored), then the Halo spray coating by hand.`:grade?'Gloss paint: corrected at the grade below, then the full prep (wash, iron, tar and mineral decon, clay, panel wipe) and the coating.'
+:prepWaived==='detail'?`Gloss paint, no correction: your ${LEVEL_FULL[2]} detail does the full prep (foam, iron and tar decon, clay, a decontamination wash), then a panel wipe and the coating. Prep included with your ${LEVEL_FULL[2]} detail.`
 :'Gloss paint, no correction: the full prep (a thorough wash, iron, tar and mineral decon, clay, a panel wipe; the coating prep line below), then the coating.');
 else why.push({matte:'Matte or satin paint: no polishing (it would add shine); a matte-safe coating.',
 vinyl:'Vinyl wrap: no polishing; a film-safe coating (a matte-safe one on matte or satin wrap).',
@@ -1114,7 +1122,7 @@ if(dropOnly)notes.push(STRINGS.g3Note);
 const needsGarage=(coat||a.wheels==='off')&&!dropOnly;
 if(needsGarage&&a.garage==='no')notes.push(a.wheels==='off'?"No garage: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't. Wheels-off work needs a garage."
 :"No garage is fine: paint coatings go on outdoors when the coating's maker allows it and the day's conditions fit, or in a covered space when they don't.");
-return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,prep:!!prep,firstServiceOff:coat&&level==='reserve'&&grade==='g3'?((M.coatings.care||{}).reserve_g3_first_service_off||0):0,levelLabel:level==='rplus'?'Halo':C[level].label,
+return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,prep:!!prep,prepWaived,detail,firstServiceOff:coat&&level==='reserve'&&grade==='g3'?((M.coatings.care||{}).reserve_g3_first_service_off||0):0,levelLabel:level==='rplus'?'Halo':C[level].label,
 lines,why,notes,suggest,total,low:total,high:total+deeper,from:lines.some(x=>x.from),needsGarage,
 where:dropOnly?'dropoff':'mobile',mobile:dropOnly?{enabled:false,reason:STRINGS.g3Mobile}:{enabled:true,reason:null},
 days:dropOnly?M.correction[grade].max_days:null,timeNote:dropOnly?STRINGS.g3Time:null,
@@ -1135,6 +1143,7 @@ const build=(n,short)=>{
 const L=[`Hi, coating plan from your site (${p.id}):`,vl,ctx];
 p.lines.slice(0,n).forEach(x=>L.push(`${x===p.lines[0]?'':'+ '}${short?x.short||x.label:x.short||x.label}: ${x.quoted?'quoted':(x.from?'from ':'')+money(x.price)}`)); 
 if(p.lines.length>n)L.push(`+ ${p.lines.length-n} more: ${money(p.lines.slice(n).reduce((t,x)=>t+x.price,0))}`);
+if(p.prepWaived==='detail')L.push(`Coating prep: included with the ${LEVEL_FULL[2]} detail`); 
 return L.concat([care,garage,`Estimate ${est} before tax, confirmed after inspection`,'Day/time that works:'].filter(Boolean)).join('\n');
 };
 let n=p.lines.length,t=build(n);
