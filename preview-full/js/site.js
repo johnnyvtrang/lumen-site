@@ -284,7 +284,7 @@ function bookBody(s){
 const own=s.text||s.body;
 if(typeof own==='string'&&own)return own;
 const a=(s.adjustments||[])[0],amt=s.travel?money(s.travel):a?money(Math.abs(a.amount)):'',x=s.vehicles[0],n=extras(x),L=[],dep=depAmt(s.deposit);
-L.push('Hi Johnny, I\'d like to book'+(s.quoteId?' (Q-'+s.quoteId+')':'')+':');
+L.push('Hi, I\'d like to book'+(s.quoteId?' (Q-'+s.quoteId+')':'')+':');
 if(many(s)){
 s.vehicles.forEach((y,i)=>L.push((y.name||'Vehicle '+(i+1))+': '+label(y)+' '+(y.total!=null?money(y.total):y.priceText||'quoted from photos')
 +(y.discount?' ('+(MULTI?pct(MULTI.additional_off)+' ':'')+'off: '+money(-y.discount)+')':'')));
@@ -455,7 +455,7 @@ if(l.length)el.setAttribute('aria-describedby',l.join(' '));else el.removeAttrib
 };
 const unmark=(f,x)=>{const st=f.querySelector('.form-status');x.removeAttribute('aria-invalid');if(st&&st.id)describe(x,st.id,false);};
 const formBody=(f,kind)=> 
-[(B[kind==='waitlist'?'ceramic':kind]||'Hi Johnny,').replace(/\s*[^.]*:\s*$/,'')]
+[(B[kind==='waitlist'?'ceramic':kind]||'Hi,').replace(/\s*[^.]*:\s*$/,'')]
 .concat(fields(f).filter(x=>x.value.trim()).map(x=>labelOf(f,x).replace(/\?$/,'')+': '+x.value.trim())).join('\n');
 function invalid(f){ 
 for(const x of fields(f)){
@@ -468,7 +468,7 @@ if(v&&pat&&!new RegExp('^(?:'+pat+')$').test(v))return[x,'Please enter '+lab.rep
 function failed(st,body){ 
 const a=d.createElement('a');
 a.href=live?smsHref(body):'#book';
-a.textContent='Text me';
+a.textContent='Text us';
 st.textContent='Didn\'t go through. ';
 st.append(a,' instead — or try again.');
 }
@@ -494,7 +494,7 @@ fetch(ep,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}
 .then(r=>{
 if(!r.ok)throw new Error('HTTP '+r.status); 
 f.reset();
-st.textContent=kind==='fleet'?'Thanks. I\'ll be in touch within 1–2 business days.':'Thanks. I\'ll text you about your coating quote within 1–2 business days.';
+st.textContent=kind==='fleet'?'Thanks. We\'ll be in touch within 1–2 business days.':'Thanks. We\'ll text you about your coating quote within 1–2 business days.';
 track('form_submit_'+kind);
 })
 .catch(()=>failed(st,body))
