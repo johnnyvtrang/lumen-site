@@ -112,7 +112,7 @@ note:'Not used for pricing. Kids reveals car_seats; Dogs or Other pets reveals p
 opt('cloth','Cloth',{materials:['cloth']}),opt('leather','Leather or leatherette',{materials:['leather','leatherette']}),
 opt('alcantara','Alcantara or microsuede',{materials:['alcantara']}),
 opt('suede','Genuine suede, nubuck or aniline leather',{materials:['leather','alcantara']}),opt('unsure','Not sure')]},
-{key:'car_seats',step:'inside',type:'count',legend:'Child car seats to clean',help:'I clean them; you reinstall them for safety.',
+{key:'car_seats',step:'inside',type:'count',legend:'Child car seats to clean',help:'We clean them; you reinstall them for safety.',
 options:[opt(0,'None'),opt(1,'1'),opt(2,'2'),opt(3,'3'),opt(4,'4')]},
 {key:'pets',step:'inside',type:'single',legend:'Pet hair',options:[
 opt('none','None'),opt('some','A little'),opt('heavy','A lot — the dog rides often')]},
@@ -152,13 +152,13 @@ opt('pods','Pods (pair)'),opt('s','Bar up to 20"'),opt('m','20–40"'),opt('l','
 opt('f','Inside & out',{saves:true}),opt('i','Interior only'),opt('e','Exterior only')]},
 {key:'mix',step:'service',type:'toggle',legend:'Mix levels (inside and outside separately)',
 help:'Pick a different level for the inside and the outside — you still get the Full discount.',options:[opt('no','No'),opt('yes','Yes')]},
-{key:'level',step:'service',type:'single',legend:'Level',help:"Choose a level, or “Based on my answers” to match what you told me. I confirm it with you at the walkaround.",options:[
+{key:'level',step:'service',type:'single',legend:'Level',help:"Choose a level, or “Based on my answers” to match what you told us. We confirm it with you at the walkaround.",options:[
 opt('auto','Based on my answers'),opt('0',LEVEL_FULL[0]),opt('1',LEVEL_FULL[1]),opt('2',LEVEL_FULL[2])]},
 {key:'level_i',step:'service',type:'single',legend:'Inside',options:[
 opt('auto','Based on my answers'),opt('0',LEVEL_FULL[0]),opt('1',LEVEL_FULL[1]),opt('2',LEVEL_FULL[2])]},
 {key:'level_e',step:'service',type:'single',legend:'Outside',options:[
 opt('auto','Based on my answers'),opt('0',LEVEL_FULL[0]),opt('1',LEVEL_FULL[1]),opt('2',LEVEL_FULL[2])]},
-{key:'where',step:'service',type:'single',legend:'Where should I do it?',help:'Not sure of your zone? See <a href="#area">Service area</a>. Prefer drop-off? Choose mobile and mention it when you text — no travel fee.',options:[
+{key:'where',step:'service',type:'single',legend:'Where should we do it?',help:'Not sure of your zone? See <a href="#area">Service area</a>. Prefer drop-off? Choose mobile and mention it when you text — no travel fee.',options:[
 opt('core','Mobile — core valley (no travel fee)'),opt('ext','Mobile — Extended zone',{fee:'ext'}),
 opt('reg','Mobile — Regional zone',{fee:'reg'}),opt('studio','Studio drop-off',{pct:'studio_discount',studioOnly:true})]},
 ];
@@ -166,15 +166,15 @@ const STRINGS={
 mold:'Mold, flood or rodents? Text photos — those start with an assessment.', 
 quotedInterior:'Interior: quoted from photos (12–15-passenger and camper interiors vary too much to price online).',
 w1:'November–March: the mobile exterior wash is rinseless (no hose rinse), with the same price and protection steps. Undercarriage flushes are available year-round on above-freezing days, over a containment mat that captures the run-off.',
-coating:"Coated by another shop? Tell me who installed it — some coating warranties also need the installer's annual inspection.",
+coating:"Coated by another shop? Tell us who installed it — some coating warranties also need the installer's annual inspection.",
 neglectPhotos:'Long-neglected interiors are confirmed from photos.',
 leatherIncluded:"Leather stains come out in this level's leather deep-clean.",
 trimIncluded:'Faded trim is restored in this level — light or heavy.',
 waterReseal:'Water spots come off in the Decon & Reseal step.',
 etched:'Etched rings on the paint need machine polishing (paint correction: Grades I–II on-site; Grade III drop-off only, up to 2 days) — quoted.',
 suede:'Genuine suede, nubuck or aniline leather: quoted after a test spot — water can mark these materials.',
-singleStage:'Classic or single-stage paint: quoted after a test spot — I check how the paint reacts before any polish or protection goes on.',
-specialUnsure:"I'll check for specialty surfaces at the walkaround and tell you before starting.",
+singleStage:'Classic or single-stage paint: quoted after a test spot — we check how the paint reacts before any polish or protection goes on.',
+specialUnsure:"We'll check for specialty surfaces at the walkaround and tell you before starting.",
 chromeIncluded:'Included in heavy chrome polish',
 emblemIncluded:'Included in chrome trim polish',
 glassTitle:'Glass ceramic coating',
@@ -183,14 +183,14 @@ fabricWet:'Not the same day as shampoo or extraction: the fabric must be dry. Bo
 rplusTitle:'Halo (optional) — longer-lasting protection',
 rplusSubE:'Outside: a spray coating, maker-rated up to 12–18 months.',
 rplusSubI:'Inside: interior panels, a seat coating (fabric & Alcantara, leather, or leather + Alcantara/fabric), or both.', 
-bestGuess:"Not sure you picked right? Book your best guess. At the walkaround — before I start — I'll take off anything you don't need, and nothing gets added without your OK.",
+bestGuess:"Not sure you picked right? Book your best guess. At the walkaround — before we start — we'll take off anything you don't need, and nothing gets added without your OK.",
 g3Time:'Allow up to 2 days',
 g3Mobile:"Not with Grade III: it takes up to 2 days, so it's drop-off only.",
-g3Note:"Grade III (two-step) can take up to 2 days, so it's drop-off only — allow up to 2 days. I'll confirm the drop-off details when you book.",
-hlMax:'Headlight restoration, Grade III needs a garage I can work in: the 2K clear coat is sprayed and cures there. 3-year clarity warranty.',
+g3Note:"Grade III (two-step) can take up to 2 days, so it's drop-off only — allow up to 2 days. We'll confirm the drop-off details when you book.",
+hlMax:'Headlight restoration, Grade III needs a garage we can work in: the 2K clear coat is sprayed and cures there. 3-year clarity warranty.',
 glassIncluded:'Included in all-glass ceramic coating',
-glassPrepWalk:"Glass coating prep: coatings bond to clean, smooth glass and seal in whatever is on it. I check for water spots and wiper haze at the walkaround and quote any removal before starting.",
-polishMaybe:'Only if etched spots are still there after the chemical spot removal — I check at the walkaround and quote it before starting.',
+glassPrepWalk:"Glass coating prep: coatings bond to clean, smooth glass and seal in whatever is on it. We check for water spots and wiper haze at the walkaround and quote any removal before starting.",
+polishMaybe:'Only if etched spots are still there after the chemical spot removal — we check at the walkaround and quote it before starting.',
 cheaperCrp:`${LEVEL_FULL[2]} covers this work for no more than ${LEVEL_FULL[1]} plus add-ons`,
 trimIncludedLine:'Faded trim restored — part of this level.',
 includedWhy:'Part of this level\'s included extras.',
@@ -200,7 +200,7 @@ function glassPrep(P,e,i,lv){
 const M=P.model;
 return`Coatings bond to clean, smooth glass and seal in whatever is on it, so water spots and wiper haze come off first: light spots chemically `+
 `(${M.addons.water_light.label.replace(/:.*$/,'').toLowerCase()}, ${money(P.addon('water_light',e,i,lv).price)}), etched spots by polishing `+
-`(windshield ${money(P.glassWheels('ws_polish',e))}, all glass ${money(P.glassWheels('glass_polish',e))}). I check at the walkaround and quote it before starting.`;
+`(windshield ${money(P.glassWheels('ws_polish',e))}, all glass ${money(P.glassWheels('glass_polish',e))}). We check at the walkaround and quote it before starting.`;
 }
 const money=n=>'$'+String(Math.round(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const pyRound=x=>{const f=Math.floor(x),d=x-f;if(Math.abs(d-0.5)<1e-9)return(f%2===0)?f:f+1;return Math.round(x);};
@@ -423,7 +423,7 @@ else note('leather_crp',`Leather stains come out in the deep-clean, which is par
 if(a.odor==='odor')add('odor',WHY.odor);
 if(a.odor==='smoke'){
 add('odor',WHY.odor_smoke);
-note('smoke','Smoke odor: I confirm from photos. Heavy smoke damage is quoted after I see it.'); 
+note('smoke','Smoke odor: we confirm from photos. Heavy smoke damage is quoted after we see it.'); 
 }
 if(a.headliner==='yes')add('headliner',WHY.headliner);
 if(a.seats==='alcantara')add('alcantara',WHY.alcantara);
@@ -439,7 +439,7 @@ note('neglect_photos',STRINGS.neglectPhotos);
 }else if(level<2&&pt==='i'){
 const xk=cloth?'shampoo_full':'shampoo_floor';
 const crp=P.price('i',2,e,i)+P.addon(xk,e,i,2).price;
-note('year_crp',`A year or more without cleaning usually needs ${LEVEL_FULL[2]} with extraction (${money(crp)}) — I'll confirm from photos.`);
+note('year_crp',`A year or more without cleaning usually needs ${LEVEL_FULL[2]} with extraction (${money(crp)}) — we'll confirm from photos.`);
 }
 }
 }
@@ -456,10 +456,10 @@ const mud=`Mud packed solid: +${money(M.modifiers.packed_mud.price)}, confirmed 
 add('flush_trail',WHY.flush_trail);note('mud',mud);
 }
 if(a.outside==='neglect'&&!prot&&elv<2)
-note('neglect_outside',`Months without a wash usually need the clay treatment, which is part of ${LEVEL_FULL[2]}. I'll confirm at the walkaround.`);
+note('neglect_outside',`Months without a wash usually need the clay treatment, which is part of ${LEVEL_FULL[2]}. We'll confirm at the walkaround.`);
 const swap=P.pfPrice('reseal',e,i)-P.pfPrice('refresh',e,i);
 if(a.outside==='neglect'&&kind==='pfull'&&a.water==='none')
-note('pf_neglect','Months without a wash usually need the full decon (Decon & Reseal). I\'ll confirm at the walkaround.');
+note('pf_neglect','Months without a wash usually need the full decon (Decon & Reseal). We\'ll confirm at the walkaround.');
 if(a.water!=='none'){
 if(kind==='reseal')note('water_reseal',STRINGS.waterReseal+(a.water==='heavy'?' '+STRINGS.etched:''));
 else{
@@ -653,8 +653,8 @@ const minutes=bmin+items.reduce((s,x)=>s+x.minutes,0);
 if(c.winter&&hasE&&c.where!=='studio')note('w1',STRINGS.w1);
 const longMin=M.policy.long_job_minutes,longH=String(Math.round(longMin / 6) / 10);
 if(minutes>longMin)
-note('long_job',c.studio?`More than ${longH} hours of work: I'll book it as a studio day, or split it over two mobile visits if you'd rather.`
-:`More than ${longH} hours of work: I'll split it over two visits on back-to-back days.`);
+note('long_job',c.studio?`More than ${longH} hours of work: we'll book it as a studio day, or split it over two mobile visits if you'd rather.`
+:`More than ${longH} hours of work: we'll split it over two visits on back-to-back days.`);
 const why=lifted&&route==='standard'?lift:split?mixWhy(le,li,explicit,reasons):whyText(pt,level,explicit,reasons,route,kind,a);
 const levelLabel=prot?M.protected[kind].label:split?mixLabel(le,li):LEVEL_FULL[level];
 const mix=mixed&&route!=='protected'?{e:le,i:li,split,saving:P.mixedSaving(le,li,e,i)}:null;
@@ -849,7 +849,7 @@ void cfg;
 const id=r.quoteId||quoteId(vehicle,answers);
 const typeLbl=typeShort(r,v);
 const vname=smsName(v);
-const head=`Hi Johnny, quote from your site (Q-${id}):`;
+const head=`Hi, quote from your site (Q-${id}):`;
 const riders=arr(answers&&answers.riders).filter(x=>RIDER_NAME[x]);
 const ridersLine=r.track!=='e'&&riders.length?`Riders: ${riders.map(x=>RIDER_NAME[x]).join(', ')}`:null;
 const whereLine=whereText(r);
@@ -896,7 +896,7 @@ const total=subtotal>0?subtotal-discount+travel:0;
 return{lines,subtotal,discount,travel,total,deposit:depositFor(total,M),full:list.length?full:null,pct:off};
 }
 const tripLong=(minutes,P)=>(minutes>P.model.policy.long_job_minutes
-?`${cap(hrsShort(P.hoursLabel(minutes)))} in all — I'll book it over back-to-back days`:null);
+?`${cap(hrsShort(P.hoursLabel(minutes)))} in all — we'll book it over back-to-back days`:null);
 function tripText(entries,P,cfg){
 const E=entries||[];
 if(!E.length)return'';
@@ -904,7 +904,7 @@ if(E.length===1)return summaryText(E[0].result,E[0].vehicle,E[0].answers,cfg);
 const T=tripTotals(E.map(x=>x.result),P.model),pct=Math.round(T.pct*100);
 const wr=E.map(x=>x.result).find(r=>travelOf(r)===T.travel)||E[0].result;
 const minutes=E.reduce((s,x)=>s+(x.result.minutes||0),0);
-const head=`Hi Johnny, trip quote from your site (Q-${tripId(E)}), ${E.length} vehicles:`;
+const head=`Hi, trip quote from your site (Q-${tripId(E)}), ${E.length} vehicles:`;
 const quotedAny=E.some(x=>x.result.route==='quoted'||x.result.interiorQuoted);
 const est=T.total?`Trip estimate ${money(T.total)} before tax${quotedAny?' (priced parts)':''}${minutes?' · '+hrsShort(P.hoursLabel(minutes)):''}`
 :'Trip estimate: quoted from photos';
@@ -988,7 +988,7 @@ opt('work','Worksite or job truck'),opt('garage','Garage-kept')],{help:'Choose a
 ADV('look','single','What do you care about most?',[opt('easy','Easier to clean & maintain'),opt('gloss','Gloss & depth'),
 opt('beading','Extreme water beading'),opt('budget','Budget-friendly'),opt('any','No strong preference')]),
 ADV('paint','single','How does the paint look today?',[opt('great','Looks great'),opt('light','Light swirls'),opt('heavy','Heavy swirls or scratches')],
-{help:'Look in direct sun or under a flashlight. Every panel is paint-gauged before I polish.'}),
+{help:'Look in direct sun or under a flashlight. Every panel is paint-gauged before we polish.'}),
 ADV('glass','single','Glass',[opt('none','No glass coating'),opt('ws','Windshield'),opt('all','All glass')]),
 ADV('wheels','single','Wheels',[opt('none','No wheel coating'),opt('faces','Wheel faces'),opt('off','Faces + barrels (wheels off)')]),
 ADV('more','multi','Also coat',[opt('trim','Black trim'),opt('tires','Tires'),opt('calipers','Brake calipers')]),
@@ -1052,10 +1052,10 @@ else why.push({matte:'Matte or satin paint: no polishing (it would add shine); a
 vinyl:'Vinyl wrap: no polishing; a film-safe coating (a matte-safe one on matte or satin wrap).',
 ppf:'PPF: no polishing; a film-safe coating over the film.'}[a.finish]+' Decon wash included.');
 if(a.years==='1')why.push(gloss?"About a year: a multi-year coating won't pay for itself — Halo (a spray coating, maker-rated up to 12–18 months) covers the time you'll own it."
-:'About a year: the film coating is still the only coating I put on these finishes; between visits, the Refresh Wash keeps it finish-safe.');
+:'About a year: the film coating is still the only coating we put on these finishes; between visits, the Refresh Wash keeps it finish-safe.');
 if(!gloss&&a.years!=='1')why.push(`${YRS_NAME[a.years]}: film coatings are rated by their makers at about two years (up to 24 months to two years); the Decon & Reseal tops them up.`);
 if(gloss&&a.years==='3')why.push('2–3 years: Essential (maker-rated up to 24 months) or Signature (maker-rated up to 36 months).');
-if(gloss&&a.years==='5')why.push('4–5 years or more: Reserve — maker-rated up to 50 months to five years, the longest maker ratings I can offer.');
+if(gloss&&a.years==='5')why.push('4–5 years or more: Reserve — maker-rated up to 50 months to five years, the longest maker ratings we can offer.');
 if(harsh.length&&gloss&&a.years!=='1')why.push(`${cap(harsh.map(x=>HARSH[x]).join(', ').replace(/, ([^,]*)$/,' and $1'))}: Reserve's base and top layers take chemical and abrasion wear best.`);
 if(garageKept&&!harsh.length)why.push("Garage-kept: less sun and weather, so Signature's gloss-focused single layer is plenty.");
 if(!harsh.length&&!garageKept&&has(a.use,'daily'))why.push('Daily commuter: any level works; the care card keeps it working.');
@@ -1088,7 +1088,7 @@ notes.push(`Wheels-off coating (faces, barrels & calipers) is quoted in person, 
 if(has(a.more,'calipers')){
 if(a.wheels==='off')notes.push('Brake calipers are coated with the wheels off — part of the wheels-off quote.');
 else{line('calipers',M.glass_wheels.items.calipers.label,P.glassWheels('calipers',e),{short:'Calipers'});
-notes.push('Brake calipers need the wheels off or open-spoke access — I check at the walkaround.');}
+notes.push('Brake calipers need the wheels off or open-spoke access — we check at the walkaround.');}
 }
 if(a.flush==='yes'){
 const fk=has(a.use,'offroad')||has(a.use,'work')?'flush_trail':'flush_salt';
@@ -1108,7 +1108,7 @@ const deeper=gi>=0&&gi<P.CORR_KEYS.length-1?P.correction(P.CORR_KEYS[gi+1],e)-P.
 const dropOnly=!!(grade&&M.correction[grade].dropoff_only);
 if(dropOnly)notes.push(STRINGS.g3Note);
 const needsGarage=(coat||a.wheels==='off')&&!dropOnly;
-if(needsGarage&&a.garage==='no')notes.push("Paint coatings and wheels-off work need a garage I can work in. Text me anyway — glass, wheel-face and tire coatings don't need one.");
+if(needsGarage&&a.garage==='no')notes.push("Paint coatings and wheels-off work need a garage we can work in. Text us anyway — glass, wheel-face and tire coatings don't need one.");
 return{answers:a,vehicle:v,type:e,typeLabel:P.types[e].label,rec,recGrade,level,grade,coat,levelLabel:level==='rplus'?'Halo':C[level].label,
 lines,why,notes,suggest,total,low:total,high:total+deeper,from:lines.some(x=>x.from),needsGarage,
 where:dropOnly?'dropoff':'mobile',mobile:dropOnly?{enabled:false,reason:STRINGS.g3Mobile}:{enabled:true,reason:null},
@@ -1126,7 +1126,7 @@ const care=p.care?`Coating Care: 30-day check-in & care card included${a.prepay=
 const garage=p.where==='dropoff'?`Where: drop-off (Grade III) · ${p.timeNote.toLowerCase()}`
 :p.needsGarage?`Garage: ${a.garage==='yes'?'yes':a.garage==='no'?'no':a.garage==='unsure'?'not sure':'not answered'}`:null;
 const build=(n,short)=>{
-const L=[`Hi Johnny, coating plan from your site (${p.id}):`,vl,ctx];
+const L=[`Hi, coating plan from your site (${p.id}):`,vl,ctx];
 p.lines.slice(0,n).forEach(x=>L.push(`${x===p.lines[0]?'':'+ '}${short?x.short||x.label:x.short||x.label}: ${x.quoted?'quoted':(x.from?'from ':'')+money(x.price)}`)); 
 if(p.lines.length>n)L.push(`+ ${p.lines.length-n} more: ${money(p.lines.slice(n).reduce((t,x)=>t+x.price,0))}`);
 return L.concat([care,garage,`Estimate ${est} before tax, confirmed after inspection`,'Day/time that works:'].filter(Boolean)).join('\n');

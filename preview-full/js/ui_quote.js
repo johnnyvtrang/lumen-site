@@ -2,8 +2,8 @@
 'use strict';
 const W=window,D=document,CFG=W.LUMEN_CONFIG||{},NOW_Y=new Date().getFullYear();
 const KEY='lumen_quote_v2',SELKEY='lumen_selection',MAX_AGE=30*864e5;
-const BODY=Object.assign({generic:"Hi Johnny, I'd like a detail quote. My car: ",exotic:"Hi Johnny, I'd like a quote for my exotic/classic: ",
-condition:"Hi Johnny, here are photos of my car's condition. My car: "},CFG.smsBodies||{});
+const BODY=Object.assign({generic:"Hi, I'd like a detail quote. My car: ",exotic:"Hi, I'd like a quote for my exotic/classic: ",
+condition:"Hi, here are photos of my car's condition. My car: "},CFG.smsBodies||{});
 const $=(s,el)=>(el||D).querySelector(s),$$=(s,el)=>Array.from((el||D).querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const money=n=>'$'+Math.round(Math.abs(n)).toLocaleString('en-US');
@@ -46,15 +46,15 @@ const EX={sedan:'Camry, Civic',coupe:'Mustang, Corvette',compact:'RAV4, CR-V',mi
 fullsuv:'Tahoe, Expedition',minivan:'Sienna, Odyssey',midpickup:'Tacoma, Ranger',fullpickup:'F-150, Ram 1500',hdpickup:'Super Duty, Ram 2500',van:'Sprinter, Transit'};
 const IT={cab:'regular cab',extcab:'extended cab',coupe:'2-door',mid3row:'3-row interior',midsuv:'2-row interior',quote:'interior quoted'};
 const LOADING='Loading the vehicle list…';
-const FAIL=`Couldn't load the vehicle list — choose the closest type below, or <a href="${esc(smsHref(BODY.generic))}" data-act="sms">text me your model</a>.`;
+const FAIL=`Couldn't load the vehicle list — choose the closest type below, or <a href="${esc(smsHref(BODY.generic))}" data-act="sms">text us your model</a>.`;
 const PS_ROW='Golf carts, UTVs, boats &amp; RVs are priced separately → <a href="#powersports">Powersports</a>';
 const ERR='Pick your vehicle, or choose the closest type below.';
-const DISC='This is an estimate for the vehicle and condition you described. At the walkaround I confirm the price and note any existing chips, cracks or thin clear coat before I start — if anything changes, you decide before I do the work. No upselling: if an item isn\'t needed, or only partly, I take it off or discount it.';
+const DISC='This is an estimate for the vehicle and condition you described. At the walkaround we confirm the price and note any existing chips, cracks or thin clear coat before we start — if anything changes, you decide before we do the work. No upselling: if an item isn\'t needed, or only partly, we take it off or discount it.';
 const TAX=' · before Utah sales tax where it applies';
 const QI='Interior: quoted from photos',QIW=cap((/\((.*)\)/.exec(B?B.STRINGS.quotedInterior:'')||['',''])[1])+'.'; 
 const DEP=P.model.policy.deposit,MULTI=P.model.policy.multi_vehicle.additional_off,pct=x=>Math.round(x*100)+'%';
-const DEP_HOW=CFG.CARD?'Paid by card when you book online, or by a secure link I text you if you book by text.':"I'll text you a secure payment link to hold your date.";
-const DEP_FINE=`${pct(DEP.share)} of the estimate, rounded to the nearest ${money(DEP.round_to)} (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If I call off for weather, it always carries over.`;
+const DEP_HOW=CFG.CARD?'Paid by card when you book online, or by a secure link we text you if you book by text.':"We'll text you a secure payment link to hold your date.";
+const DEP_FINE=`${pct(DEP.share)} of the estimate, rounded to the nearest ${money(DEP.round_to)} (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If we call off for weather, it always carries over.`;
 const ADD_VEH=`Add another vehicle (${pct(MULTI)} off)`;
 function typeLabel(t,it){
 const L=P.types[t].label;
@@ -145,12 +145,12 @@ waiting=false;
 const r=srch(q);
 let l=r.results,msg='',hdr='';
 if(r.redirect==='powersports')msg=PS_ROW;
-else if(r.redirect==='exotic')msg=`${CFG.STUDIO?'Exotics and show cars are quoted (studio only) — text me photos.':'Exotics and show cars are quoted — text me photos.'} <a class="btn btn-ghost btn-sm" href="${esc(smsHref(BODY.exotic+q.trim()))}" data-act="sms">Text me photos</a>`;
+else if(r.redirect==='exotic')msg=`${CFG.STUDIO?'Exotics and show cars are quoted (studio only) — text us photos.':'Exotics and show cars are quoted — text us photos.'} <a class="btn btn-ghost btn-sm" href="${esc(smsHref(BODY.exotic+q.trim()))}" data-act="sms">Text us photos</a>`;
 else if(r.redirect==='generic'){msg='Choose the closest type below.';if(o.onGeneric)o.onGeneric(r.suggest);}
 else if(r.redirect==='ambiguous'){l=r.candidates;hdr='Which one?';}
 else if(r.redirect==='make'){l=r.shortlist;hdr=r.make+': pick a model, or keep typing.';if(o.onMake)o.onMake(r.make);}
-else if(r.noMatch)msg=o.picker?'No match. Try another spelling, choose the closest type below, or text me the model.'
-:`No match. <a href="#q-lists" data-act="lists">Pick the make below</a>, <a href="#q-types" data-act="types">choose the closest type</a>, or <a href="${esc(smsHref(BODY.generic+q.trim()))}" data-act="sms">text me the model</a>.`;
+else if(r.noMatch)msg=o.picker?'No match. Try another spelling, choose the closest type below, or text us the model.'
+:`No match. <a href="#q-lists" data-act="lists">Pick the make below</a>, <a href="#q-types" data-act="types">choose the closest type</a>, or <a href="${esc(smsHref(BODY.generic+q.trim()))}" data-act="sms">text us the model</a>.`;
 show(l.slice(0,6),msg,hdr,r.typesDiffer);
 }
 function optHTML(x,differ){
@@ -523,9 +523,9 @@ $('#q-hrs',root).textContent=(quoted?'Interior quoted from photos':cap(r.hoursLa
 $('#q-trip',root).innerHTML=trip?tripHTML(q.entries,q.trip):'';
 $('#q-dep',root).innerHTML=depHTML(trip?q.trip.deposit:r.deposit,trip);
 const text=q.text,fine=mq('(pointer:fine)'),what=trip?'trip quote':'quote';
-$('#q-acts',root).innerHTML=(fine?(CFG.email?`<a class="btn btn-primary" data-act="mail" href="${esc(mailHref((trip?'Trip quote Q-':'Quote Q-')+q.selection.quoteId+' (Lumen Finishworks)',text))}">Email me this ${what}</a>`:'')+
+$('#q-acts',root).innerHTML=(fine?(CFG.email?`<a class="btn btn-primary" data-act="mail" href="${esc(mailHref((trip?'Trip quote Q-':'Quote Q-')+q.selection.quoteId+' (Lumen Finishworks)',text))}">Email us this ${what}</a>`:'')+
 `<button type="button" class="btn ${CFG.email?'btn-ghost':'btn-primary'}" data-act="copy">Copy ${what}</button>`
-:`<a class="btn btn-primary" data-act="sms" href="${esc(smsHref(text))}">Text me this ${what}</a>`)+
+:`<a class="btn btn-primary" data-act="sms" href="${esc(smsHref(text))}">Text us this ${what}</a>`)+
 `<a class="btn btn-ghost" href="#book" data-act="book">${trip?(q.entries.length===2?'Book both vehicles':`Book all ${q.entries.length} vehicles`):'Book this'}</a><button type="button" class="btn btn-ghost" data-act="addveh">${ADD_VEH}</button><button type="button" class="link-btn" data-act="reset">Start over</button>`;
 refreshBooked();
 }
@@ -542,7 +542,7 @@ if(!W.LumenSite)$$('#book [data-sms="book"]').forEach(x=>{x.href=smsHref(ns.text
 }
 function depHTML(d,trip){
 const amt=d&&d.amount;
-return`<p class="q-dep-l"><span>${amt?`Deposit to hold the date${trip?' (whole trip)':''}`:'Deposit'}</span> <b>${amt?money(amt):'Set once I price it from your photos'}</b></p><p class="q-dep-f">${esc(DEP_FINE)} ${esc(DEP_HOW)}</p>`;
+return`<p class="q-dep-l"><span>${amt?`Deposit to hold the date${trip?' (whole trip)':''}`:'Deposit'}</span> <b>${amt?money(amt):'Set once we price it from your photos'}</b></p><p class="q-dep-f">${esc(DEP_FINE)} ${esc(DEP_HOW)}</p>`;
 }
 const tripName=v=>(v.manual?vShort(v):v.name);
 function tripEntries(){
@@ -837,10 +837,10 @@ if(plan.where==='dropoff')out+=`<fieldset class="q-q ca-where"><legend>Where</le
 `<p class="q-xr ca-mob-r" id="ca-mob-r">${esc(plan.mobile.reason)}</p>`+
 `<label class="q-opt"><input type="radio" name="ca-where" value="dropoff" checked><span>Drop-off</span></label></div>`+
 `<p class="q-hrs ca-days" id="ca-days">${esc(plan.timeNote)}</p></fieldset>`;
-if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage I can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">Paint coatings need one, so the coating goes on and cures out of the sun, wind and dust.</p></div>`;
+if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage we can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">Paint coatings need one, so the coating goes on and cures out of the sun, wind and dust.</p></div>`;
 const text=B.coatingText(plan,v?vText(v):null),fine=mq('(pointer:fine)');
-const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Johnny</a>`
-:`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Johnny</a>`;
+const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Lumen</a>`
+:`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Lumen</a>`;
 out+=`<div class="q-acts">${send}<button type="button" class="btn btn-ghost" data-ca="copy">Copy my plan</button>${plan.level==='rplus'?'<button type="button" class="btn btn-ghost" data-ca="builder">Price Halo in the detail builder</button>':''}<button type="button" class="link-btn" data-ca="reset">Start over</button></div><div id="ca-cp"></div>`;
 keep2(()=>{
 $('#ca-chip-l',adv).textContent=v?vShort(v):'a sedan';
@@ -969,7 +969,7 @@ if(adv&&ca){
 adv.classList.add('q-on','ca-on');
 adv.setAttribute('role','region');
 adv.setAttribute('aria-labelledby','ca-title');
-adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then a likely fit and a live estimate. Change any choice; I confirm the plan with you at a free inspection.</p></div>`+
+adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then a likely fit and a live estimate. Change any choice; we confirm the plan with you at a free inspection.</p></div>`+
 `<div class="veh-chip ca-chip"><span>Prices for: <b id="ca-chip-l">a sedan</b></span> <button type="button" class="link-btn" data-ca-change>Change</button><div class="veh-picker" id="ca-pk" hidden></div></div>`+
 `<div class="ca-grid"><div class="ca-qs" id="ca-qs"></div><div class="ca-out" id="ca-out" aria-live="polite"></div></div>`;
 adv.addEventListener('change',caChange);
