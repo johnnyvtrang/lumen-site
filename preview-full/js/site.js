@@ -110,18 +110,6 @@ else if(t!==null&&el.textContent!==t)el.textContent=t;
 const orig=el=>(el._lumen==null?(el._lumen=el.textContent):el._lumen); 
 const snapshot=()=>$$('[data-vehicle-label],[data-type-label],[data-up-for],[data-plan-cycle]').forEach(orig);
 const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s=>{if(s&&s.tagName==='SMALL')hide(s,h);});
-function oneoff(k,f,V){ 
-const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
-const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Coated Care Wash + Interior Renew one at a time ('+avg+').';
-return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
-}
-function planSave(el,k,f,V){
-const dd=half(P.planOneOff(k,f,V.e,V.i)-P.plan(k,f,V.e,V.i));
-hide(el,V.q||dd<=0);
-if(k==='std')return'Save at least '+Math.round(100*M.plans.std.save_pct[f])+'% per visit'; 
-return'Save '+P.planSavePct(k,f,V.e,V.i)+'% per visit'; 
-}
 function render(){
 sync();
 if(!P)return;
@@ -157,20 +145,11 @@ if(pa===undefined||pb===undefined)return undefined;
 hide(el.closest('.upgrade')||el,q(a)||q(b));
 return'+'+money(pb-pa);
 });
-fill('save',(el,k)=>{
-const m= /^f([123])$/.exec(k);
-if(k!=='max'&&!m)return undefined;
-hide(el.closest('.save-line')||el,V.q);
-return money(m?P.fullSaving(m[1]-1,V.e,V.i):P.maxSaving(V.e,V.i));
-});
-fill('save-badge',el=>{hide(el,V.q);return'up to '+money(P.maxSaving(V.e,V.i))+' less than separately';});
 fill('plan',(el,k)=>{
 if(!M.plans[k])return undefined;
 smalls(el,V.q);
 return V.q?'Quoted':money(P.plan(k,f,V.e,V.i));
 });
-fill('plan-oneoff',(el,k)=>{if(!M.plans[k])return undefined;hide(el,V.q);return oneoff(k,f,V);});
-fill('plan-save',(el,k)=>(M.plans[k]?planSave(el,k,f,V):undefined));
 fill('plan-cycle',el=>(f==='q'?'Full Clean & Protect every visit.':orig(el)));
 const F={pickup: /pickup$/.test(V.e),hdpickup:V.e==='hdpickup',lifted:!/^(sedan|coupe|minivan)$/.test(V.e),
 ice:!(v&&+v.ev===1),rows2:!(v&&+v.rows===1),flush:true}; 
