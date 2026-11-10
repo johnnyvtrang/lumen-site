@@ -91,9 +91,10 @@ if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
 if(!mins&& /^g[123]$/.test(k)&&M.correction[k])return P.correction(k,V.e); 
 if(!mins&&k==='care:prepay2'&&P.carePrepay)return P.carePrepay(V.e); 
+if(!mins&&k==='coat_prep'&&P.coatingPrep)return P.coatingPrep(V.e); 
 if(!mins&&P.coating){ 
-const c= /^coat(_parts|_save)?:([a-z0-9_]+)$/.exec(k);
-if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c[1]==='_save'?P.coatingSaving:P.coating)(c[2],V.e);
+const c= /^coat(_parts|_save|_only)?:([a-z0-9_]+)$/.exec(k);
+if(c&&M.coatings&&M.coatings.tiers[c[2]])return(c[1]==='_parts'?P.coatingParts:c[1]==='_save'?P.coatingSaving:c[1]==='_only'?P.coatingOnly:P.coating)(c[2],V.e);
 }
 };
 const TRACK={i:'Interior',e:'Exterior',f:'Full'};
@@ -112,13 +113,13 @@ const smalls=(el,h)=>[el.previousElementSibling,el.nextElementSibling].forEach(s
 function oneoff(k,f,V){ 
 const one=P.planOneOff(k,f,V.e,V.i),dd=half(P.plan(k,f,V.e,V.i)-one),avg=money(half(one));
 const lead=dd===0?'The same per visit as booking ':money(Math.abs(dd))+(dd>0?' more':' less')+' per visit than booking ';
-if(k==='pf')return lead+'a Refresh Wash + Interior Renew one at a time ('+avg+').';
+if(k==='pf')return lead+'a Coated Care Wash + Interior Renew one at a time ('+avg+').';
 return lead+(f==='q'?'a Full Clean & Protect one at a time ('+avg+').':'one at a time (about '+avg+' each).');
 }
 function planSave(el,k,f,V){
 const dd=half(P.planOneOff(k,f,V.e,V.i)-P.plan(k,f,V.e,V.i));
 hide(el,V.q||dd<=0);
-if(k==='std')return'Save '+Math.round(100*M.plans.std.save_pct[f])+'% per visit';
+if(k==='std')return'Save at least '+Math.round(100*M.plans.std.save_pct[f])+'% per visit'; 
 return'Save '+P.planSavePct(k,f,V.e,V.i)+'% per visit'; 
 }
 function render(){

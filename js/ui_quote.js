@@ -2,8 +2,8 @@
 'use strict';
 const W=window,D=document,CFG=W.LUMEN_CONFIG||{},NOW_Y=new Date().getFullYear();
 const KEY='lumen_quote_v2',SELKEY='lumen_selection',MAX_AGE=30*864e5;
-const BODY=Object.assign({generic:"Hi Johnny, I'd like a detail quote. My car: ",exotic:"Hi Johnny, I'd like a quote for my exotic/classic: ",
-condition:"Hi Johnny, here are photos of my car's condition. My car: "},CFG.smsBodies||{});
+const BODY=Object.assign({generic:"Hi, I'd like a detail quote. My car: ",exotic:"Hi, I'd like a quote for my exotic/classic: ",
+condition:"Hi, here are photos of my car's condition. My car: "},CFG.smsBodies||{});
 const $=(s,el)=>(el||D).querySelector(s),$$=(s,el)=>Array.from((el||D).querySelectorAll(s));
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const money=n=>'$'+Math.round(Math.abs(n)).toLocaleString('en-US');
@@ -46,15 +46,15 @@ const EX={sedan:'Camry, Civic',coupe:'Mustang, Corvette',compact:'RAV4, CR-V',mi
 fullsuv:'Tahoe, Expedition',minivan:'Sienna, Odyssey',midpickup:'Tacoma, Ranger',fullpickup:'F-150, Ram 1500',hdpickup:'Super Duty, Ram 2500',van:'Sprinter, Transit'};
 const IT={cab:'regular cab',extcab:'extended cab',coupe:'2-door',mid3row:'3-row interior',midsuv:'2-row interior',quote:'interior quoted'};
 const LOADING='Loading the vehicle list…';
-const FAIL=`Couldn't load the vehicle list — choose the closest type below, or <a href="${esc(smsHref(BODY.generic))}" data-act="sms">text me your model</a>.`;
+const FAIL=`Couldn't load the vehicle list — choose the closest type below, or <a href="${esc(smsHref(BODY.generic))}" data-act="sms">text us your model</a>.`;
 const PS_ROW='Golf carts, UTVs, boats &amp; RVs are priced separately → <a href="#powersports">Powersports</a>';
 const ERR='Pick your vehicle, or choose the closest type below.';
-const DISC='This is an estimate for the vehicle and condition you described. At the walkaround I confirm the price and note any existing chips, cracks or thin clear coat before I start — if anything changes, you decide before I do the work. No upselling: if an item isn\'t needed, or only partly, I take it off or discount it.';
+const DISC='This is an estimate for the vehicle and condition you described. At the walkaround we confirm the price and note any existing chips, cracks or thin clear coat before we start — if anything changes, you decide before we do the work. No upselling: if an item isn\'t needed, or only partly, we take it off or discount it.';
 const TAX=' · before Utah sales tax where it applies';
 const QI='Interior: quoted from photos',QIW=cap((/\((.*)\)/.exec(B?B.STRINGS.quotedInterior:'')||['',''])[1])+'.'; 
 const DEP=P.model.policy.deposit,MULTI=P.model.policy.multi_vehicle.additional_off,pct=x=>Math.round(x*100)+'%';
-const DEP_HOW=CFG.CARD?'Paid by card when you book online, or by a secure link I text you if you book by text.':"I'll text you a secure payment link to hold your date.";
-const DEP_FINE=`${pct(DEP.share)} of the estimate, rounded to the nearest ${money(DEP.round_to)} (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If I call off for weather, it always carries over.`;
+const DEP_HOW=CFG.CARD?'Paid by card when you book online, or by a secure link we text you if you book by text.':"We'll text you a secure payment link to hold your date.";
+const DEP_FINE=`${pct(DEP.share)} of the estimate, rounded to the nearest ${money(DEP.round_to)} (${money(DEP.min)} minimum), applied to your final bill. Cancel or reschedule ${DEP.notice_hours}+ hours ahead and it moves to your new date or is refunded; later cancellations and no-shows keep it. If we call off for weather, it always carries over.`;
 const ADD_VEH=`Add another vehicle (${pct(MULTI)} off)`;
 function typeLabel(t,it){
 const L=P.types[t].label;
@@ -145,12 +145,12 @@ waiting=false;
 const r=srch(q);
 let l=r.results,msg='',hdr='';
 if(r.redirect==='powersports')msg=PS_ROW;
-else if(r.redirect==='exotic')msg=`${CFG.STUDIO?'Exotics and show cars are quoted (studio only) — text me photos.':'Exotics and show cars are quoted — text me photos.'} <a class="btn btn-ghost btn-sm" href="${esc(smsHref(BODY.exotic+q.trim()))}" data-act="sms">Text me photos</a>`;
+else if(r.redirect==='exotic')msg=`${CFG.STUDIO?'Exotics and show cars are quoted (studio only) — text us photos.':'Exotics and show cars are quoted — text us photos.'} <a class="btn btn-ghost btn-sm" href="${esc(smsHref(BODY.exotic+q.trim()))}" data-act="sms">Text us photos</a>`;
 else if(r.redirect==='generic'){msg='Choose the closest type below.';if(o.onGeneric)o.onGeneric(r.suggest);}
 else if(r.redirect==='ambiguous'){l=r.candidates;hdr='Which one?';}
 else if(r.redirect==='make'){l=r.shortlist;hdr=r.make+': pick a model, or keep typing.';if(o.onMake)o.onMake(r.make);}
-else if(r.noMatch)msg=o.picker?'No match. Try another spelling, choose the closest type below, or text me the model.'
-:`No match. <a href="#q-lists" data-act="lists">Pick the make below</a>, <a href="#q-types" data-act="types">choose the closest type</a>, or <a href="${esc(smsHref(BODY.generic+q.trim()))}" data-act="sms">text me the model</a>.`;
+else if(r.noMatch)msg=o.picker?'No match. Try another spelling, choose the closest type below, or text us the model.'
+:`No match. <a href="#q-lists" data-act="lists">Pick the make below</a>, <a href="#q-types" data-act="types">choose the closest type</a>, or <a href="${esc(smsHref(BODY.generic+q.trim()))}" data-act="sms">text us the model</a>.`;
 show(l.slice(0,6),msg,hdr,r.typesDiffer);
 }
 function optHTML(x,differ){
@@ -457,7 +457,7 @@ if(k==='riders')st.answers=B.applyRiders(a);
 save();paint();
 }
 function stepR(){
-return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-rplus"></div><div id="q-lines"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-best" id="q-best">${esc(B.STRINGS.bestGuess)}</p><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
+return head(st.trip.length?`Vehicle ${st.trip.length+1}: your estimate`:'Your estimate')+`<p class="q-rv" id="q-rv"></p><div id="q-seg"></div><div id="q-lines"></div><div id="q-rplus"></div><details class="q-xd" id="q-ex"${ui.exOpen?' open':''}><summary></summary><div class="q-xl"></div></details><div class="q-tot" aria-live="polite" aria-atomic="true"><span id="q-totl"></span> <b id="q-tot"></b><span class="sr-only" id="q-tots"></span></div><p class="q-hrs" id="q-hrs"></p><div id="q-trip"></div><div class="q-dep" id="q-dep"></div><p class="q-best" id="q-best">${esc(B.STRINGS.bestGuess)}</p><p class="q-fine">${DISC}</p><div class="q-acts" id="q-acts"></div><div id="q-cp"></div>`;
 }
 const line=(l,w,amt,cls)=>`<div class="q-line${cls?' '+cls:''}"><p><span>${esc(l)}</span>${w?`<small>${esc(w)}</small>`:''}</p><b>${amt}</b></div>`;
 const serviceLabel=r=>B.serviceLabel(r); 
@@ -501,7 +501,7 @@ if(notes.length)L+=`<ul class="q-notes">${notes.map(n=>`<li>${esc(n.text)}</li>`
 if(r.actions.length)L+=`<p class="q-ra">${r.actions.map(x=>`<button type="button" class="btn btn-ghost btn-sm" data-act="lvl" data-level="${x.level}">${esc(x.label)}</button>`).join('')}</p>`;
 $('#q-lines',root).innerHTML=L;
 const rx=r.extras.filter(x=>x.group==='rplus'),nx=r.extras.filter(x=>x.group!=='rplus');
-$('#q-rplus',root).innerHTML=rx.length&&!quoted?`<fieldset class="q-rplus"><legend class="q-rplus-h">${esc(B.STRINGS.rplusTitle)}</legend>${rx.some(x=>x.key==='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubE)}</p>`:''}${rx.some(x=>x.key!=='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubI)}</p>`:''}${rx.map(x=>xHTML(x)).join('')}</fieldset>`:'';
+$('#q-rplus',root).innerHTML=rx.length&&!quoted?`<fieldset class="q-xgf q-rplus-plain"><legend class="q-xg">${esc(B.STRINGS.rplusTitle)}</legend>${rx.some(x=>x.key==='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubE)}</p>`:''}${rx.some(x=>x.key!=='radiance_plus_e')?`<p class="q-xgp">${esc(B.STRINGS.rplusSubI)}</p>`:''}${rx.map(x=>xHTML(x)).join('')}</fieldset>`:'';
 const ex=$('#q-ex',root);
 ex.hidden=!nx.length;
 $('summary',ex).textContent=`Add an extra (${nx.length})`;
@@ -523,9 +523,9 @@ $('#q-hrs',root).textContent=(quoted?'Interior quoted from photos':cap(r.hoursLa
 $('#q-trip',root).innerHTML=trip?tripHTML(q.entries,q.trip):'';
 $('#q-dep',root).innerHTML=depHTML(trip?q.trip.deposit:r.deposit,trip);
 const text=q.text,fine=mq('(pointer:fine)'),what=trip?'trip quote':'quote';
-$('#q-acts',root).innerHTML=(fine?(CFG.email?`<a class="btn btn-primary" data-act="mail" href="${esc(mailHref((trip?'Trip quote Q-':'Quote Q-')+q.selection.quoteId+' (Lumen Finishworks)',text))}">Email me this ${what}</a>`:'')+
+$('#q-acts',root).innerHTML=(fine?(CFG.email?`<a class="btn btn-primary" data-act="mail" href="${esc(mailHref((trip?'Trip quote Q-':'Quote Q-')+q.selection.quoteId+' (Lumen Finishworks)',text))}">Email us this ${what}</a>`:'')+
 `<button type="button" class="btn ${CFG.email?'btn-ghost':'btn-primary'}" data-act="copy">Copy ${what}</button>`
-:`<a class="btn btn-primary" data-act="sms" href="${esc(smsHref(text))}">Text me this ${what}</a>`)+
+:`<a class="btn btn-primary" data-act="sms" href="${esc(smsHref(text))}">Text us this ${what}</a>`)+
 `<a class="btn btn-ghost" href="#book" data-act="book">${trip?(q.entries.length===2?'Book both vehicles':`Book all ${q.entries.length} vehicles`):'Book this'}</a><button type="button" class="btn btn-ghost" data-act="addveh">${ADD_VEH}</button><button type="button" class="link-btn" data-act="reset">Start over</button>`;
 refreshBooked();
 }
@@ -542,7 +542,7 @@ if(!W.LumenSite)$$('#book [data-sms="book"]').forEach(x=>{x.href=smsHref(ns.text
 }
 function depHTML(d,trip){
 const amt=d&&d.amount;
-return`<p class="q-dep-l"><span>${amt?`Deposit to hold the date${trip?' (whole trip)':''}`:'Deposit'}</span> <b>${amt?money(amt):'Set once I price it from your photos'}</b></p><p class="q-dep-f">${esc(DEP_FINE)} ${esc(DEP_HOW)}</p>`;
+return`<p class="q-dep-l"><span>${amt?`Deposit to hold the date${trip?' (whole trip)':''}`:'Deposit'}</span> <b>${amt?money(amt):'Set once we price it from your photos'}</b></p><p class="q-dep-f">${esc(DEP_FINE)} ${esc(DEP_HOW)}</p>`;
 }
 const tripName=v=>(v.manual?vShort(v):v.name);
 function tripEntries(){
@@ -776,14 +776,15 @@ c.input.focus();
 if(!DB)loadDB().catch(()=>{});
 }
 const adv=D.getElementById('advisor'),CKEY='lumen_coat_v1';
-let ca=null,caText='';
+let ca=null,caText='',caTouched=false;
 if(adv&&B.coatingPlan){
-const sv=sGet(CKEY);
-ca=Object.assign(B.advisorDefaults(),sv&&sv.v===1&&Date.now()-(sv.savedAt||0)<MAX_AGE?sv.answers:{});
+const sv=sGet(CKEY),fresh=sv&&sv.v===1&&Date.now()-(sv.savedAt||0)<MAX_AGE;
+ca=Object.assign(B.advisorDefaults(),fresh?sv.answers:{});
+caTouched=!!(fresh&&sv.touched);
 }
-const caSave=()=>sSet(CKEY,{v:1,savedAt:Date.now(),answers:ca});
+const caSave=()=>sSet(CKEY,{v:1,savedAt:Date.now(),answers:ca,touched:caTouched});
 const caVeh=()=>st.vehicle||LS.vehicle||null;
-const NUMS=['1','2','3','4','5','6','6','6','7'];
+const NUMS=['1','2','3','4','5','6','7','8','9']; 
 function caFs(q,plan,deco,n){
 const multi=q.type==='multi',val=ca[q.key],nm='ca-'+q.key;
 const on=x=>(multi?(val||[]).indexOf(x)>=0:String(val)===x);
@@ -812,35 +813,43 @@ return h;
 const lvls=gloss?['rplus','essential','signature','reserve']:['film'];
 const lvPrice=k=>(k==='rplus'?P.price('e',2,e)+P.addon('radiance_plus_e',e).price:P.coating(k,e));
 const lvName=k=>(k==='rplus'?'Halo':M.coatings.tiers[k].label.replace(/ coating$/,''));
-const rec='<span class="q-rec">Likely fit</span>';
+const rec=caTouched?'<span class="q-rec">Likely fit</span>':'';
 const seg=(name,legend,list,cur,recK,price,label)=>`<p class="q-segl">${esc(legend)}</p><fieldset class="seg q-seg ca-seg"><legend class="sr-only">${esc(legend)}</legend>${list.map(k=>`<label class="seg-opt"><input type="radio" name="${name}" value="${k}"${k===cur?' checked':''}><span class="q-sl">${esc(label(k))}</span> <b>${price(k)}</b>${k===recK?rec:''}</label>`).join('')}</fieldset>`;
-let out=`<p class="label">A likely fit — confirmed at your free inspection</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Halo — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`;
-out+=`<ul class="ca-why">${plan.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`;
+let out=caTouched?`<p class="label">A likely fit — confirmed at your free inspection</p><h4 class="ca-rec" id="ca-rec">${esc(plan.rec==='rplus'?'Halo — a spray coating, not a multi-year coating':(M.coatings.tiers[plan.rec].label.replace(/ coating$/,'')+' coating'))}</h4>`
++`<ul class="ca-why">${plan.why.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`
+:`<p class="label">Answer the questions above to see a likely fit</p><p class="q-help">The estimate below follows the choices shown; change any of them.</p>`;
 if(lvls.length>1)out+=seg('ca-level','Coating',lvls,plan.level,plan.rec,k=>money(lvPrice(k)),lvName);
 if(gloss){
-const gl=(plan.level==='rplus'?['none']:[]).concat(P.CORR_KEYS);
-out+=seg('ca-grade','Paint correction · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':plan.recGrade,
-k=>(k==='none'?'':'from '+money(P.correction(k,e))),k=>(k==='none'?'None':M.correction[k].short));
+const gl=['none'].concat(P.CORR_KEYS);
+out+=seg('ca-grade','Paint correction (optional) · every panel paint-gauged',gl,plan.grade||'none',plan.level==='rplus'?'none':(plan.recGrade||'none'),
+k=>(k==='none'?(P.prepApplies&&P.prepApplies(plan.level)?(plan.prepWaived==='detail'?'prep included':'+'+money(P.coatingPrep(e))+' prep'):''):'from '+money(P.correction(k,e))),k=>(k==='none'?'No correction':M.correction[k].short));
+out+=`<p class="q-help ca-nocorr">A coating seals in the paint as it is, so swirls or scratches stay visible under it; correction first removes them. With or without it, every coating gets the full prep: a thorough wash, iron, tar and mineral decon, clay and a panel wipe. With no correction, that prep is its own line (${money(P.coatingPrep?P.coatingPrep(e):0)} on ${v?'your vehicle':'a sedan'}), unless you book an Exterior or Full Radiance detail with the coating (that detail does the prep); with a correction grade, it's part of the correction visit.</p>`;
+if(plan.coat){ 
+const dk=['none','e1','f1','e2','f2'],dName=k=>(k==='none'?'No detail':`${k[0]==='e'?'Exterior':'Full'} ${B.LEVELS[+k[1]]}`);
+out+=seg('ca-detail','A detail the same visit (optional)',dk,plan.detail||'none',null,
+k=>(k==='none'?'':money(P.price(k[0],+k[1],e,k[0]==='f'?(v&&v.itype&&v.itype!=='quote'&&P.types[v.itype]?v.itype:e):undefined))),dName);
+if(plan.prepWaived==='detail')out+=`<p class="q-help ca-prepw"><b>Prep included with your Radiance detail.</b> Its foam, iron and tar decon, clay and wash are the coating prep, so there's no prep line.</p>`;
+}
 out+=`<p class="q-help ca-g3">Grade III: ${esc(M.correction.g3.time_note.replace(/^Up/,'up'))}.</p>`;
 }
 out+=`<div class="ca-lines">${plan.lines.map(x=>line(x.label,x.saving?`${money(x.saving+x.price)} if coated one by one`:x.from?'From — confirmed after inspection and a written quote':'',x.quoted?'Quoted':(x.from?'from ':'')+money(x.price),x===plan.lines[0]?'q-main':'')).join('')}</div>`;
 if(plan.care){
-out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in and a care card. The Annual Coating Service (a Decon &amp; Reseal, ${money(plan.care.annual)}) keeps the warranty — <a href="${D.getElementById('coating-care')?'':(CFG.root||'../')+'paint-correction-ceramic-coating/'}#coating-care">how it works</a>.</p>`+
+out+=`<div class="ca-care"><p class="ca-care-h">Coating Care</p><p>Included: a 30-day check-in, a care card and a free yearly inspection that keeps the warranty. The Annual Coating Service (${money(plan.care.annual)}) is optional, there if it needs a deep clean — <a href="${D.getElementById('coating-care')?'':(CFG.root||'../')+'paint-correction-ceramic-coating/'}#coating-care">how it works</a>.</p>`+
 `<label class="q-opt ca-pre"><input type="checkbox" name="ca-prepay" value="yes"${ca.prepay==='yes'?' checked':''}><span>Prepay two annual services at installation (about 12% off) <b class="q-amt">${money(plan.care.prepay)}</b></span></label></div>`;
 }
 if(plan.notes.length)out+=`<ul class="q-notes">${plan.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`;
 const est=plan.high>plan.low?`${money(plan.low)}–${money(plan.high)}`:`${plan.from?'from ':''}${money(plan.low)}`;
 out+=`<div class="q-tot ca-tot" aria-live="polite" aria-atomic="true"><span>Estimate</span> <b id="ca-tot">${est}</b></div><p class="q-hrs">Before tax · your price confirmed after inspection and a written quote${plan.high>plan.low?' (the range runs to one correction grade deeper)':''}.</p>`;
-if(plan.coat)out+=`<p class="q-fine">${CFG.foundingDiscountConfirmed?'Founding customers: 35–40% off the coating itself (not the correction or extras), for before/after photos and your feedback.':'Founding customers: ask about founding pricing on the coating itself (not the correction or extras).'}</p>`;
+if(plan.coat)out+=`<p class="q-fine">${CFG.foundingDiscountConfirmed?'Founding customers: 35–40% off the coating itself (not the prep, correction or extras), for before/after photos and your feedback.':'Founding customers: ask about founding pricing on the coating itself (not the prep, correction or extras).'}</p>`;
 if(plan.where==='dropoff')out+=`<fieldset class="q-q ca-where"><legend>Where</legend><div class="q-opts">`+
 `<label class="q-opt is-off"><input type="radio" name="ca-where" value="mobile" disabled aria-describedby="ca-mob-r"><span>Mobile — your driveway or garage</span></label>`+
 `<p class="q-xr ca-mob-r" id="ca-mob-r">${esc(plan.mobile.reason)}</p>`+
 `<label class="q-opt"><input type="radio" name="ca-where" value="dropoff" checked><span>Drop-off</span></label></div>`+
 `<p class="q-hrs ca-days" id="ca-days">${esc(plan.timeNote)}</p></fieldset>`;
-if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage I can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">Paint coatings need one, so the coating goes on and cures out of the sun, wind and dust.</p></div>`;
+if(plan.needsGarage)out+=`<div class="q-f ca-gar"><label for="ca-garage">Do you have a garage we can work in?</label><select id="ca-garage" name="ca-garage" class="q-in" aria-describedby="ca-gar-h"><option value=""${ca.garage===''?' selected':''}>Choose one</option><option value="yes"${ca.garage==='yes'?' selected':''}>Yes</option><option value="no"${ca.garage==='no'?' selected':''}>No</option><option value="unsure"${ca.garage==='unsure'?' selected':''}>Not sure</option></select><p class="q-help" id="ca-gar-h">It helps us plan the day: we apply outdoors when the coating's maker allows it and the day's conditions fit, or in a garage or covered space when they don't.</p></div>`;
 const text=B.coatingText(plan,v?vText(v):null),fine=mq('(pointer:fine)');
-const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Johnny</a>`
-:`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Johnny</a>`;
+const send=fine&&CFG.email?`<a class="btn btn-primary" data-ca="send" href="${esc(mailHref('Coating plan '+plan.id+' (Lumen Finishworks)',text))}">Send my coating plan to Lumen</a>`
+:`<a class="btn btn-primary" data-ca="send" href="${esc(smsHref(text))}">Send my coating plan to Lumen</a>`;
 out+=`<div class="q-acts">${send}<button type="button" class="btn btn-ghost" data-ca="copy">Copy my plan</button>${plan.level==='rplus'?'<button type="button" class="btn btn-ghost" data-ca="builder">Price Halo in the detail builder</button>':''}<button type="button" class="link-btn" data-ca="reset">Start over</button></div><div id="ca-cp"></div>`;
 keep2(()=>{
 $('#ca-chip-l',adv).textContent=v?vShort(v):'a sedan';
@@ -860,9 +869,10 @@ if(!n||n.indexOf('ca-')!==0)return;
 const k=n.slice(3),q=B.ADVISOR.find(x=>x.key===k);
 if(q&&q.type==='multi')ca[k]=$$(`input[name="${n}"]:checked`,adv).map(x=>x.value);
 else if(q)ca[k]=t.value;
-else if(k==='level'||k==='grade'||k==='garage')ca[k]=t.value;
+else if(k==='level'||k==='grade'||k==='garage'||k==='detail')ca[k]=t.value;
 else if(k==='prepay'||k==='flush')ca[k]=t.checked?'yes':'no';
 else if(k==='sw')ca.wheels=t.checked?(ca.wheels==='none'?'faces':ca.wheels):'none';
+if(q||k==='level'||k==='grade')caTouched=true;
 if(k==='finish'||k==='years'){ca.level='auto';ca.grade='auto';}
 if(k==='paint')ca.grade='auto';
 caSave();caPaint();
@@ -874,7 +884,7 @@ if(!b||!adv.contains(b))return;
 if(b.hasAttribute('data-ca-change')){const pk=$('#ca-pk',adv);if(pk.hidden)mountPicker(pk);return;}
 const k=b.dataset.ca,v=caVeh(),plan=B.coatingPlan(ca,v,P);
 if(k==='complete')Object.assign(ca,{glass:'all',wheels:ca.wheels==='none'?'faces':ca.wheels,more:ca.more.filter(y=>y!=='trim'&&y!=='tires').concat('trim','tires')});
-else if(k==='reset'){ca=B.advisorDefaults();sDel(CKEY);caPaint();const f=$('input[name="ca-finish"]',adv);if(f)f.focus();return;}
+else if(k==='reset'){ca=B.advisorDefaults();caTouched=false;sDel(CKEY);caPaint();const f=$('input[name="ca-finish"]',adv);if(f)f.focus();return;}
 else if(k==='send'){lt('coat_plan_send');return;}
 else if(k==='copy'){
 const t=caText,done=ok=>{b.textContent=ok?'Copied':'Copy my plan';if(!ok)$('#ca-cp',adv).innerHTML=`<label class="q-lbl" for="ca-cpt">Copy this text</label><textarea id="ca-cpt" class="q-in q-cpt" rows="8" readonly>${esc(t)}</textarea>`;};
@@ -969,7 +979,7 @@ if(adv&&ca){
 adv.classList.add('q-on','ca-on');
 adv.setAttribute('role','region');
 adv.setAttribute('aria-labelledby','ca-title');
-adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then a likely fit and a live estimate. Change any choice; I confirm the plan with you at a free inspection.</p></div>`+
+adv.innerHTML=`<div class="q-top"><h3 id="ca-title" class="q-title">Your coating plan</h3><p class="q-sub">Seven quick questions, then a likely fit and a live estimate. Change any choice; we confirm the plan with you at a free inspection.</p></div>`+
 `<div class="veh-chip ca-chip"><span>Prices for: <b id="ca-chip-l">a sedan</b></span> <button type="button" class="link-btn" data-ca-change>Change</button><div class="veh-picker" id="ca-pk" hidden></div></div>`+
 `<div class="ca-grid"><div class="ca-qs" id="ca-qs"></div><div class="ca-out" id="ca-out" aria-live="polite"></div></div>`;
 adv.addEventListener('change',caChange);
