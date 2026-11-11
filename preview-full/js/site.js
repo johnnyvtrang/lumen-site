@@ -90,6 +90,7 @@ const m=LVL.exec(k);
 if(m)return P[mins?'minutes':'price'](m[1],m[2]-1,V.e,V.i);
 if(PF[k])return P[mins?'pfMinutes':'pfPrice'](PF[k],V.e,V.i);
 if(!mins&& /^g[123]$/.test(k)&&M.correction[k])return P.correction(k,V.e); 
+if(!mins&&k==='care:member'&&P.careMemberService)return P.careMemberService(V.e); 
 if(!mins&&k==='care:prepay2'&&P.carePrepay)return P.carePrepay(V.e); 
 if(!mins&&k==='coat_prep'&&P.coatingPrep)return P.coatingPrep(V.e); 
 if(!mins&&P.coating){ 

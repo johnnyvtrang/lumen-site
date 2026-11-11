@@ -136,6 +136,7 @@ return W&&m&&(W.tracks||[]).indexOf(m[1])>=0&&+m[2]>=W.min_level?'detail':null;
 };
 const prepDue=(kind,grade,detail)=>prepApplies(kind)&&!prepWaivedBy(grade,detail);
 const carePrepay=e=>{const c=CARE.prepay2;return round9(c.services*pfPrice(c.of.replace(/^pf_/,''),e)*(1-c.off));};
+const careMemberService=e=>{const c=CARE.member_service;return c?round9(pfPrice(c.of.replace(/^pf_/,''),e)*(1-c.off)):undefined;}; 
 const CORR_KEYS=Object.keys(M.correction).filter(k=>M.correction[k]&&typeof M.correction[k]==='object'); 
 const cycle=(e,i)=>(2*price('f',0,e,i)+price('f',1,e,i)) / 3;
 const planOneOff=(name,freq,e,i)=>name==='std'?(freq==='q'?price('f',1,e,i):cycle(e,i)):pfPrice('refresh',e)+price('i',1,e,i);
@@ -189,7 +190,7 @@ const m=mixedPrice(a,b,k),lo=price('f',Math.min(a,b),k),hi=price('f',Math.max(a,
 if(a===b?m!==lo||mixedMinutes(a,b,k)!==minutes('f',a,k):!(m>=lo&&m<=hi))console.warn('Lumen pricing: mixed level out of bounds',k,a,b);
 }
 })();
-return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,correction,CORR_KEYS,coating,coatingParts,coatingSaving,coatingPrep,coatingOnly,prepApplies,prepWaivedBy,prepDue,carePrepay,plan,planOneOff,planSavePct,
+return{minutes,price,takeRateMinutes,included,allot,pfMinutes,pfPrice,addon,glassWheels,glassWheelsMinutes,heavySoil,correction,CORR_KEYS,coating,coatingParts,coatingSaving,coatingPrep,coatingOnly,prepApplies,prepWaivedBy,prepDue,carePrepay,careMemberService,plan,planOneOff,planSavePct,
 fullSaving,maxSaving,mixedPrice,mixedSaving,mixedMinutes,mixedIncluded,hoursLabel,publicTypes,round9,round5,pyRound,types:T0,model:M};
 }
 if(typeof module!=='undefined')module.exports={makePricing};
